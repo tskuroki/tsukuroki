@@ -3,291 +3,141 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f7fb" />
+  <meta name="theme-color" content="#f2f2f7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Study Log</title>
   <link rel="manifest" href="manifest.json" />
   <style>
-    :root {
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #1b2430;
-      --muted: #6b7280;
-      --line: #e7ebf2;
-      --accent: #111827;
-      --accent-soft: #e9eefb;
-      --green: #1f8f53;
-      --danger: #c0392b;
-      --shadow: 0 8px 24px rgba(17,24,39,.07);
-      --radius: 18px;
+    :root{
+      --bg:#f2f2f7; --card:rgba(255,255,255,.84); --text:#111; --muted:#6e6e73;
+      --line:rgba(60,60,67,.12); --accent:#007aff; --green:#34c759; --orange:#ff9f0a; --red:#ff3b30;
+      --shadow:0 12px 28px rgba(17,17,17,.08); --radius:24px;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;}
+    body{
+      margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif; color:var(--text);
+      background:radial-gradient(circle at top left, rgba(255,255,255,.95), transparent 28%), linear-gradient(180deg,#f9f9fc 0%, #f2f2f7 42%, #edf1f7 100%);
+      padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
     }
-    .app {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 16px 14px 90px;
+    .app{max-width:760px; margin:0 auto; padding:12px 14px 108px;}
+    .status{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 8px;font-size:13px;font-weight:700;}
+    .status-right{display:flex;gap:5px;align-items:center;}
+    .sig{display:inline-block;width:3px;background:#111;border-radius:9px;}
+    .sig:nth-child(1){height:6px}.sig:nth-child(2){height:9px}.sig:nth-child(3){height:12px}
+    .battery{width:20px;height:10px;border:1.8px solid #111;border-radius:3px;position:relative}
+    .battery:after{content:"";position:absolute;right:-3px;top:2px;width:2px;height:4px;background:#111;border-radius:1px}
+    .battery .fill{position:absolute;left:1px;top:1px;bottom:1px;width:13px;background:#111;border-radius:2px}
+    .hero,.card,.sticky-tabs{backdrop-filter:blur(18px);}
+    .hero{
+      background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.82));
+      border:1px solid rgba(255,255,255,.7); box-shadow:var(--shadow); border-radius:28px; padding:18px 18px 16px; margin-bottom:14px;
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 10px 4px 16px;
+    .hero-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+    h1{margin:0;font-size:30px;line-height:1.04;letter-spacing:-.03em;}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px}
+    .pill{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:10px 12px;font-size:12px;color:var(--muted);white-space:nowrap;}
+    .hero-meta,.metrics,.two,.three,.controls,.sticky-tabs{display:grid;gap:10px}
+    .hero-meta{margin-top:14px;grid-template-columns:repeat(2,1fr)}
+    .mini-card{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.76);border-radius:18px;padding:12px;}
+    .mini-label{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .mini-value{font-size:18px;font-weight:800}
+    .metrics{grid-template-columns:repeat(3,1fr)}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.76);box-shadow:var(--shadow);border-radius:var(--radius);padding:16px;}
+    .metric-value{font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-top:8px}
+    .label,.section-sub,.progress-meta,.entry-meta,.hint{font-size:12px;color:var(--muted)}
+    .section-title{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+    .stack{display:grid;gap:10px}
+    .two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)} .controls{grid-template-columns:1fr 1fr}
+    input,select,button{width:100%;font:inherit} 
+    input,select{border:none;outline:none;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:16px;padding:14px;color:var(--text)}
+    button{border:none;border-radius:18px;padding:14px 16px;font-weight:700;cursor:pointer}
+    .primary{background:var(--accent);color:#fff} .secondary{background:#fff;color:#111;border:1px solid var(--line)} .danger{color:var(--red)}
+    .big-time{text-align:center;font-size:42px;font-weight:800;letter-spacing:-.04em;margin:10px 0 12px}
+    .progress-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+    .progress-track{height:12px;background:rgba(60,60,67,.08);border-radius:999px;overflow:hidden}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#69afff 0%, var(--accent) 100%);border-radius:999px;transition:width .3s ease}
+    .warning{padding:14px;border-radius:18px;border:1px solid transparent}.warning.ok{background:rgba(52,199,89,.10);border-color:rgba(52,199,89,.18)}.warning.warn{background:rgba(255,159,10,.12);border-color:rgba(255,159,10,.22)}.warning.danger{background:rgba(255,59,48,.10);border-color:rgba(255,59,48,.18)}
+    .warning-title{font-weight:800}.warning-body{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.45}
+    .bar-wrap{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;min-height:190px;margin-top:10px}
+    .bar-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .bar-stack{width:100%;max-width:34px;height:130px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+    .bar{width:100%;border-radius:14px 14px 10px 10px;min-height:6px;background:linear-gradient(180deg,#7bbcff 0%, var(--accent) 100%);box-shadow:inset 0 -10px 16px rgba(0,0,0,.08)}
+    .marker{width:100%;border-radius:10px;background:rgba(255,159,10,.28);min-height:4px;border:1px solid rgba(255,159,10,.4)}
+    .bar-value,.bar-label,.bar-target{font-size:11px;color:var(--muted);text-align:center}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)} .row:first-child{border-top:none}
+    .entry-time{font-weight:800;white-space:nowrap}.small-btn{padding:8px 10px;border-radius:12px;font-size:12px}
+    .muted-box{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--muted);font-size:13px;line-height:1.5}
+    .sticky-tabs{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:10;width:min(760px, calc(100% - 18px));
+      padding:10px;background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.75);box-shadow:0 14px 30px rgba(0,0,0,.10);border-radius:24px;
+      grid-template-columns:repeat(3,1fr)
     }
-    h1 {
-      font-size: 28px;
-      margin: 0;
-      letter-spacing: -.02em;
-    }
-    .sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-    .pill {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-size: 12px;
-      color: var(--muted);
-      box-shadow: var(--shadow);
-    }
-    .grid {
-      display: grid;
-      gap: 12px;
-    }
-    .metrics {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 14px;
-    }
-    .metric-value {
-      font-size: 28px;
-      font-weight: 700;
-      margin-top: 8px;
-    }
-    .label {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .timer {
-      padding: 18px;
-    }
-    .big-time {
-      font-size: 46px;
-      font-weight: 800;
-      letter-spacing: -.03em;
-      text-align: center;
-      margin: 10px 0 16px;
-    }
-    .controls, .two {
-      display: grid;
-      gap: 10px;
-    }
-    .controls { grid-template-columns: 1fr 1fr; }
-    .two { grid-template-columns: 1fr 1fr; }
-    button, select, input {
-      width: 100%;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 14px 12px;
-      font-size: 16px;
-      color: var(--text);
-    }
-    button {
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .primary {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-    .secondary {
-      background: #fff;
-    }
-    .danger {
-      color: var(--danger);
-    }
-    .section-title {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .mini {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-top: 1px solid var(--line);
-    }
-    .row:first-child { border-top: none; }
-    .entry-meta {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 3px;
-    }
-    .entry-time {
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .bar-wrap {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-      align-items: end;
-      min-height: 170px;
-      margin-top: 10px;
-    }
-    .bar-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-    .bar {
-      width: 100%;
-      max-width: 40px;
-      border-radius: 12px 12px 8px 8px;
-      background: linear-gradient(180deg, #111827 0%, #7c8cab 100%);
-      min-height: 6px;
-    }
-    .bar-label, .bar-value {
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .sticky-tabs {
-      position: fixed;
-      left: 50%; transform: translateX(-50%);
-      bottom: 14px;
-      width: min(730px, calc(100% - 24px));
-      background: rgba(255,255,255,.92);
-      backdrop-filter: blur(18px);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      padding: 8px;
-      z-index: 10;
-    }
-    .tab {
-      border: none;
-      background: transparent;
-      padding: 12px 8px;
-      border-radius: 14px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .tab.active {
-      background: var(--accent-soft);
-      color: var(--text);
-      font-weight: 700;
-    }
-    .view { display: none; }
-    .view.active { display: block; }
-    .muted-box {
-      background: #f9fbff;
-      border: 1px dashed #d7dfef;
-      color: var(--muted);
-      padding: 12px;
-      border-radius: 14px;
-      font-size: 13px;
-    }
-    .small-btn {
-      padding: 8px 10px;
-      font-size: 13px;
-      border-radius: 10px;
-    }
-    @media (max-width: 640px) {
-      .metrics, .two, .controls { grid-template-columns: 1fr; }
-      .metric-value { font-size: 24px; }
-      .big-time { font-size: 40px; }
-      h1 { font-size: 24px; }
-    }
+    .tab{background:transparent;border:0;border-radius:18px;padding:12px 10px;font-weight:700;color:var(--muted)}
+    .tab.active{background:rgba(0,122,255,.10);color:var(--accent)} .view{display:none} .view.active{display:block}
+    @media (max-width:560px){ .metrics,.two,.three,.hero-meta{grid-template-columns:1fr} .big-time{font-size:38px} .metric-value{font-size:28px}}
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="header">
-      <div>
-        <h1>Study Log</h1>
-        <div class="sub">勉強時間をシンプルに記録・集計</div>
+    <div class="status">
+      <div id="statusTime">9:41</div>
+      <div class="status-right"><span class="sig"></span><span class="sig"></span><span class="sig"></span><div class="battery"><div class="fill"></div></div></div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>消費税法<br>Study Log</h1>
+          <div class="sub">目標時間から逆算して、今週の必要時間と遅れを見える化</div>
+        </div>
+        <div class="pill" id="daysLeft">試験日 未設定</div>
       </div>
-      <div class="pill" id="daysLeft">試験日 未設定</div>
+      <div class="hero-meta">
+        <div class="mini-card"><div class="mini-label">開始日</div><div class="mini-value" id="startDateLabel">2026/3/1</div></div>
+        <div class="mini-card"><div class="mini-label">総目標時間</div><div class="mini-value" id="targetHoursLabel">450h</div></div>
+      </div>
     </div>
 
     <div id="view-home" class="view active">
-      <div class="grid metrics">
-        <div class="card">
-          <div class="label">今日</div>
-          <div class="metric-value" id="todayHours">0.0h</div>
-        </div>
-        <div class="card">
-          <div class="label">今週</div>
-          <div class="metric-value" id="weekHours">0.0h</div>
-        </div>
-        <div class="card">
-          <div class="label">累計</div>
-          <div class="metric-value" id="totalHours">0.0h</div>
-        </div>
-      </div>
-
-      <div class="card timer" style="margin-top:12px;">
-        <div class="section-title">タイマー</div>
-        <div class="two" style="margin-bottom:10px;">
-          <select id="subject">
-            <option>消費税法</option>
-            <option>理論</option>
-            <option>計算</option>
-            <option>会計</option>
-            <option>その他</option>
-          </select>
-          <select id="category">
-            <option>理論</option>
-            <option>計算</option>
-            <option>講義</option>
-            <option>復習</option>
-            <option>演習</option>
-          </select>
-        </div>
-        <div class="two" style="margin-bottom:10px;">
-          <select id="material">
-            <option>TAC講義</option>
-            <option>理論テキスト</option>
-            <option>トレーニング</option>
-            <option>過去問</option>
-            <option>その他</option>
-          </select>
-          <input id="note" type="text" placeholder="メモ（任意）" />
-        </div>
-        <div class="big-time" id="timerDisplay">00:00:00</div>
-        <div class="controls">
-          <button class="primary" id="startBtn">開始</button>
-          <button class="secondary" id="stopBtn">終了して保存</button>
-        </div>
-        <div class="mini" style="margin-top:10px; text-align:center;">開始するとこの端末の保存領域に記録されます</div>
+      <div class="metrics">
+        <div class="card"><div class="label">今日</div><div class="metric-value" id="todayHours">0.0h</div></div>
+        <div class="card"><div class="label">今週</div><div class="metric-value" id="weekHours">0.0h</div></div>
+        <div class="card"><div class="label">累計</div><div class="metric-value" id="totalHours">0.0h</div></div>
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="section-title">今週の推移</div>
+        <div class="progress-head"><div><div class="section-title" style="margin-bottom:4px;">総合進捗</div><div class="progress-meta" id="totalProgressMeta">0.0h / 450h</div></div><div class="entry-time" id="totalProgressPct">0%</div></div>
+        <div class="progress-track"><div class="progress-bar" id="totalProgressBar"></div></div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="progress-head"><div><div class="section-title" style="margin-bottom:4px;">今週ペース</div><div class="progress-meta" id="weeklyNeedMeta">今週必要 0.0h / 実績 0.0h</div></div><div class="entry-time" id="weeklyGap">-</div></div>
+        <div class="progress-track"><div class="progress-bar" id="weeklyProgressBar"></div></div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">今週の警告</div>
+        <div id="warningBox" class="warning ok"><div class="warning-title" id="warningTitle">順調</div><div class="warning-body" id="warningBody">設定を保存するとここにペース判定が出ます。</div></div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">タイマー</div>
+        <div class="stack">
+          <div class="two">
+            <select id="category"><option>講義</option><option>理論</option><option>計算</option><option>テスト</option><option>その他</option></select>
+            <input id="note" type="text" placeholder="メモ（任意）" />
+          </div>
+          <div class="big-time" id="timerDisplay">00:00:00</div>
+          <div class="controls"><button class="primary" id="startBtn">開始</button><button class="secondary" id="stopBtn">終了して保存</button></div>
+          <div class="hint">科目は消費税法で固定。区分だけ選んで記録します。</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">今週の累計進捗グラフ</div>
+        <div class="section-sub">青 = 実績累計 / オレンジ = その曜日終了時点の必要累計</div>
         <div class="bar-wrap" id="weeklyChart"></div>
       </div>
 
@@ -300,34 +150,16 @@
     <div id="view-log" class="view">
       <div class="card">
         <div class="section-title">手動追加</div>
-        <div class="two" style="margin-bottom:10px;">
-          <select id="manualSubject">
-            <option>消費税法</option>
-            <option>理論</option>
-            <option>計算</option>
-            <option>会計</option>
-            <option>その他</option>
-          </select>
-          <select id="manualCategory">
-            <option>理論</option>
-            <option>計算</option>
-            <option>講義</option>
-            <option>復習</option>
-            <option>演習</option>
-          </select>
+        <div class="stack">
+          <div class="three">
+            <input id="manualDate" type="date" />
+            <select id="manualCategory"><option>講義</option><option>理論</option><option>計算</option><option>テスト</option><option>その他</option></select>
+            <input id="manualMinutes" type="number" min="1" placeholder="分 (例: 90)" />
+          </div>
+          <input id="manualNote" type="text" placeholder="メモ（任意）" />
+          <button class="primary" id="manualAddBtn">記録を追加</button>
+          <div class="muted-box">過去分を入れるときは日付を変えてまとめて追加できます。</div>
         </div>
-        <div class="two" style="margin-bottom:10px;">
-          <select id="manualMaterial">
-            <option>TAC講義</option>
-            <option>理論テキスト</option>
-            <option>トレーニング</option>
-            <option>過去問</option>
-            <option>その他</option>
-          </select>
-          <input id="manualMinutes" type="number" min="1" placeholder="分 (例: 90)" />
-        </div>
-        <input id="manualNote" type="text" placeholder="メモ（任意）" style="margin-bottom:10px;"/>
-        <button class="primary" id="manualAddBtn">記録を追加</button>
       </div>
 
       <div class="card" style="margin-top:12px;">
@@ -339,33 +171,22 @@
     <div id="view-settings" class="view">
       <div class="card">
         <div class="section-title">設定</div>
-        <div class="two" style="margin-bottom:10px;">
-          <input id="examDate" type="date" />
-          <input id="weeklyGoal" type="number" min="1" placeholder="週目標時間 (例: 15)" />
-        </div>
-        <button class="primary" id="saveSettingsBtn">設定を保存</button>
-        <div class="muted-box" style="margin-top:12px;">
-          iPhoneで使うなら、Safariで開いて「共有 → ホーム画面に追加」でアプリっぽく使えます。
+        <div class="stack">
+          <div class="two"><input id="startDate" type="date" /><input id="examDate" type="date" /></div>
+          <div class="two"><input id="targetHours" type="number" min="1" placeholder="総目標時間 (例: 450)" /><input id="weeklyGoal" type="number" min="1" placeholder="手動週目標（任意）" /></div>
+          <button class="primary" id="saveSettingsBtn">設定を保存</button>
+          <div class="muted-box">開始日は 2026/3/1 を初期設定にしています。<br>試験日は 2026/8/6 を初期値にしています。必要なら変更してください。</div>
         </div>
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="section-title">進捗</div>
-        <div class="row">
-          <div>
-            <div>今週の目標</div>
-            <div class="entry-meta" id="goalMeta">未設定</div>
-          </div>
-          <div class="entry-time" id="goalGap">-</div>
-        </div>
+        <div class="section-title">逆算サマリー</div>
+        <div id="summaryRows"></div>
       </div>
 
       <div class="card" style="margin-top:12px;">
         <div class="section-title">データ管理</div>
-        <div class="two">
-          <button class="secondary small-btn" id="exportBtn">JSON書き出し</button>
-          <button class="secondary small-btn danger" id="clearBtn">全データ削除</button>
-        </div>
+        <div class="two"><button class="secondary" id="exportBtn">JSON書き出し</button><button class="secondary danger" id="clearBtn">全データ削除</button></div>
       </div>
     </div>
   </div>
@@ -376,290 +197,182 @@
     <button class="tab" data-view="settings">設定</button>
   </div>
 
-  <script>
-    const STORAGE_KEY = 'studylog_entries_v1';
-    const SETTINGS_KEY = 'studylog_settings_v1';
+<script>
+const STORAGE_KEY = 'studylog_entries_v2';
+const SETTINGS_KEY = 'studylog_settings_v2';
+let timerInterval = null;
+let timerStartAt = null;
+const $ = id => document.getElementById(id);
 
-    let timerInterval = null;
-    let timerStartAt = null;
+function defaultSettings(){ return { startDate:'2026-03-01', examDate:'2026-08-06', targetHours:450, weeklyGoal:null }; }
+function getEntries(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
+function saveEntries(entries){ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
+function getSettings(){ try { return { ...defaultSettings(), ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; } catch { return defaultSettings(); } }
+function saveSettings(settings){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+function pad(n){ return String(n).padStart(2, '0'); }
+function formatDuration(ms){ const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60; return `${pad(h)}:${pad(m)}:${pad(sec)}`; }
+function formatHours(h){ return `${h.toFixed(1)}h`; }
+function formatDate(ts){ const d=new Date(ts); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function formatDateOnly(ymd){ const d=new Date(ymd+'T00:00:00'); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+function startOfDay(date=new Date()){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime(); }
+function startOfWeek(date=new Date()){ const d=new Date(date); const day=d.getDay(); const diff=(day===0?-6:1-day); d.setDate(d.getDate()+diff); d.setHours(0,0,0,0); return d.getTime(); }
+function dateToTs(ymd){ return new Date(ymd+'T00:00:00').getTime(); }
+function escapeHtml(str){ const div=document.createElement('div'); div.textContent=str; return div.innerHTML; }
+function sumHours(entries){ return entries.reduce((s,e)=> s + e.durationMin/60, 0); }
+function addEntry(entry){ const entries=getEntries(); entries.unshift(entry); saveEntries(entries); render(); }
+function filteredByStart(entries, settings){ const start=dateToTs(settings.startDate); return entries.filter(e => e.endAt >= start); }
 
-    const $ = (id) => document.getElementById(id);
+function calcPlan(entries, settings){
+  const startTs = dateToTs(settings.startDate);
+  const examTs = dateToTs(settings.examDate);
+  const todayStart = startOfDay();
+  const scoped = entries.filter(e => e.endAt >= startTs);
+  const doneHours = sumHours(scoped);
+  const targetHours = Number(settings.targetHours) || 0;
+  const remainingHours = Math.max(0, targetHours - doneHours);
+  const msToExam = examTs - todayStart;
+  const daysLeft = Math.max(0, Math.ceil(msToExam / 86400000));
+  const weeksLeft = Math.max(1, Math.ceil((msToExam + 1) / (86400000 * 7)));
+  const autoWeeklyNeed = remainingHours / weeksLeft;
+  const weeklyNeed = Number(settings.weeklyGoal) || autoWeeklyNeed;
+  const weekEntries = scoped.filter(e => e.endAt >= startOfWeek());
+  const weekHours = sumHours(weekEntries);
+  const weekday = (() => { const d=new Date().getDay(); return d===0 ? 7 : d; })();
+  const todayExpected = weeklyNeed * (weekday / 7);
+  const todayGap = weekHours - todayExpected;
+  const weekGap = weekHours - weeklyNeed;
+  return {doneHours,targetHours,remainingHours,daysLeft,weeksLeft,autoWeeklyNeed,weeklyNeed,weekHours,todayExpected,todayGap,weekGap};
+}
 
-    function getEntries() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-      catch { return []; }
-    }
+function renderStatusTime(){ const now=new Date(); $('statusTime').textContent=`${now.getHours()}:${pad(now.getMinutes())}`; }
 
-    function saveEntries(entries) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    }
+function renderMetrics(entries, settings, plan){
+  const today = entries.filter(e => e.endAt >= startOfDay());
+  const week = entries.filter(e => e.endAt >= startOfWeek());
+  $('todayHours').textContent = formatHours(sumHours(today));
+  $('weekHours').textContent = formatHours(sumHours(week));
+  $('totalHours').textContent = formatHours(plan.doneHours);
+  $('startDateLabel').textContent = formatDateOnly(settings.startDate);
+  $('targetHoursLabel').textContent = `${plan.targetHours}h`;
 
-    function getSettings() {
-      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
-      catch { return {}; }
-    }
+  const totalRate = plan.targetHours > 0 ? Math.min(100, Math.round((plan.doneHours / plan.targetHours) * 100)) : 0;
+  $('totalProgressMeta').textContent = `${plan.doneHours.toFixed(1)}h / ${plan.targetHours}h`;
+  $('totalProgressPct').textContent = `${totalRate}%`;
+  $('totalProgressBar').style.width = `${totalRate}%`;
 
-    function saveSettings(settings) {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    }
+  const weeklyRate = plan.weeklyNeed > 0 ? Math.min(100, (plan.weekHours / plan.weeklyNeed) * 100) : 0;
+  $('weeklyNeedMeta').textContent = `今週必要 ${plan.weeklyNeed.toFixed(1)}h / 実績 ${plan.weekHours.toFixed(1)}h`;
+  $('weeklyGap').textContent = plan.weekGap >= 0 ? `+${plan.weekGap.toFixed(1)}h` : `${plan.weekGap.toFixed(1)}h`;
+  $('weeklyProgressBar').style.width = `${Math.max(0, Math.min(100, weeklyRate))}%`;
+  $('daysLeft').textContent = `試験まで ${plan.daysLeft}日`;
+}
 
-    function pad(n) { return String(n).padStart(2, '0'); }
+function renderWarning(plan){
+  const box = $('warningBox'), title = $('warningTitle'), body = $('warningBody');
+  const shortage = Math.max(0, plan.todayExpected - plan.weekHours);
+  box.className = 'warning ok';
+  if (plan.weekGap >= 0){
+    title.textContent = '順調';
+    body.textContent = `今週ペースを上回っています。必要 ${plan.weeklyNeed.toFixed(1)}h に対して実績 ${plan.weekHours.toFixed(1)}h。`;
+  } else if (plan.todayGap >= -1.0){
+    box.className = 'warning warn';
+    title.textContent = 'やや遅れ';
+    body.textContent = `今日時点の必要累計 ${plan.todayExpected.toFixed(1)}h に対して ${shortage.toFixed(1)}h 不足。週末で巻き返せる範囲です。`;
+  } else {
+    box.className = 'warning danger';
+    title.textContent = '要巻き返し';
+    body.textContent = `今日時点の必要累計を ${shortage.toFixed(1)}h 下回っています。今週の残りで重点的に積む必要があります。`;
+  }
+}
 
-    function formatDuration(ms) {
-      const totalSec = Math.floor(ms / 1000);
-      const h = Math.floor(totalSec / 3600);
-      const m = Math.floor((totalSec % 3600) / 60);
-      const s = totalSec % 60;
-      return `${pad(h)}:${pad(m)}:${pad(s)}`;
-    }
+function renderRecent(entries){
+  const recent = entries.slice(0, 8), target = $('recentEntries');
+  if (!recent.length){ target.innerHTML = '<div class="muted-box">まだ記録がありません</div>'; return; }
+  target.innerHTML = recent.map(e => `<div class="row"><div><div>消費税法 / ${escapeHtml(e.category)}</div><div class="entry-meta">${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div></div><div class="entry-time">${e.durationMin.toFixed(0)}分</div></div>`).join('');
+}
+function renderAll(entries){
+  const target = $('allEntries');
+  if (!entries.length){ target.innerHTML = '<div class="muted-box">まだ記録がありません</div>'; return; }
+  target.innerHTML = entries.map((e,i) => `<div class="row"><div><div>消費税法 / ${escapeHtml(e.category)}</div><div class="entry-meta">${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div></div><div style="text-align:right;"><div class="entry-time">${e.durationMin.toFixed(0)}分</div><button class="secondary small-btn danger" onclick="deleteEntry(${i})">削除</button></div></div>`).join('');
+}
+function renderWeeklyChart(entries, plan){
+  const target = $('weeklyChart');
+  const dayNames = ['月','火','水','木','金','土','日'];
+  const start = startOfWeek();
+  let cumulative = 0;
+  const actualCumulative = Array.from({length:7}, (_, i) => {
+    const dayStart = start + i * 86400000, dayEnd = dayStart + 86400000;
+    const h = entries.filter(e => e.endAt >= dayStart && e.endAt < dayEnd).reduce((sum, e) => sum + e.durationMin / 60, 0);
+    cumulative += h;
+    return cumulative;
+  });
+  const targetCumulative = Array.from({length:7}, (_, i) => plan.weeklyNeed * ((i+1)/7));
+  const max = Math.max(...actualCumulative, ...targetCumulative, 1);
+  target.innerHTML = actualCumulative.map((h, i) => `<div class="bar-col"><div class="bar-value">${h.toFixed(1)}h</div><div class="bar-stack"><div class="marker" style="height:${Math.max(4, (targetCumulative[i]/max)*120)}px"></div><div class="bar" style="height:${Math.max(6, (h/max)*120)}px"></div></div><div class="bar-target">目標 ${targetCumulative[i].toFixed(1)}</div><div class="bar-label">${dayNames[i]}</div></div>`).join('');
+}
+function renderSettings(settings, plan){
+  $('startDate').value = settings.startDate || '2026-03-01';
+  $('examDate').value = settings.examDate || '2026-08-06';
+  $('targetHours').value = settings.targetHours || 450;
+  $('weeklyGoal').value = settings.weeklyGoal || '';
+  $('manualDate').value = new Date().toISOString().slice(0,10);
+  const rows = [
+    ['開始日', formatDateOnly(settings.startDate)],
+    ['試験日', formatDateOnly(settings.examDate)],
+    ['残り日数', `${plan.daysLeft}日`],
+    ['累計実績', `${plan.doneHours.toFixed(1)}h`],
+    ['残り必要時間', `${plan.remainingHours.toFixed(1)}h`],
+    ['残り週数', `${plan.weeksLeft}週`],
+    ['自動計算の今週必要時間', `${plan.autoWeeklyNeed.toFixed(1)}h`],
+    ['現在の今週目標', `${plan.weeklyNeed.toFixed(1)}h`]
+  ];
+  $('summaryRows').innerHTML = rows.map(([k,v]) => `<div class="row"><div><div>${k}</div></div><div class="entry-time">${v}</div></div>`).join('');
+}
+function startTimer(){ if (timerStartAt) return; timerStartAt = Date.now(); timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); renderStatusTime(); }, 1000); }
+function stopTimer(){
+  if (!timerStartAt) return;
+  const endAt = Date.now();
+  const durationMin = Math.max(1, Math.round((endAt - timerStartAt) / 60000));
+  addEntry({ subject:'消費税法', category:$('category').value, note:$('note').value.trim(), startAt:timerStartAt, endAt, durationMin });
+  clearInterval(timerInterval); timerInterval = null; timerStartAt = null; $('timerDisplay').textContent = '00:00:00'; $('note').value = '';
+}
+function deleteEntry(index){ const entries=getEntries(); entries.splice(index,1); saveEntries(entries); render(); }
+window.deleteEntry = deleteEntry;
 
-    function formatHours(hours) {
-      return `${hours.toFixed(1)}h`;
-    }
-
-    function formatDate(ts) {
-      const d = new Date(ts);
-      return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-
-    function startOfDay(date = new Date()) {
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-    }
-
-    function startOfWeek(date = new Date()) {
-      const d = new Date(date);
-      const day = d.getDay();
-      const diff = (day === 0 ? -6 : 1 - day);
-      d.setDate(d.getDate() + diff);
-      d.setHours(0,0,0,0);
-      return d.getTime();
-    }
-
-    function sumHours(entries) {
-      return entries.reduce((sum, e) => sum + e.durationMin / 60, 0);
-    }
-
-    function addEntry(entry) {
-      const entries = getEntries();
-      entries.unshift(entry);
-      saveEntries(entries);
-      render();
-    }
-
-    function renderMetrics(entries) {
-      const todayStart = startOfDay();
-      const weekStart = startOfWeek();
-      const today = entries.filter(e => e.endAt >= todayStart);
-      const week = entries.filter(e => e.endAt >= weekStart);
-      $('todayHours').textContent = formatHours(sumHours(today));
-      $('weekHours').textContent = formatHours(sumHours(week));
-      $('totalHours').textContent = formatHours(sumHours(entries));
-
-      const settings = getSettings();
-      if (settings.weeklyGoal) {
-        const gap = settings.weeklyGoal - sumHours(week);
-        $('goalMeta').textContent = `目標 ${settings.weeklyGoal}h / 実績 ${sumHours(week).toFixed(1)}h`;
-        $('goalGap').textContent = gap > 0 ? `あと ${gap.toFixed(1)}h` : `達成 +${Math.abs(gap).toFixed(1)}h`;
-      } else {
-        $('goalMeta').textContent = '未設定';
-        $('goalGap').textContent = '-';
-      }
-    }
-
-    function renderRecent(entries) {
-      const recent = entries.slice(0, 8);
-      const target = $('recentEntries');
-      if (!recent.length) {
-        target.innerHTML = '<div class="muted-box">まだ記録がありません</div>';
-        return;
-      }
-      target.innerHTML = recent.map((e) => `
-        <div class="row">
-          <div>
-            <div>${e.subject} / ${e.category}</div>
-            <div class="entry-meta">${e.material} ・ ${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div>
-          </div>
-          <div class="entry-time">${(e.durationMin).toFixed(0)}分</div>
-        </div>
-      `).join('');
-    }
-
-    function renderAll(entries) {
-      const target = $('allEntries');
-      if (!entries.length) {
-        target.innerHTML = '<div class="muted-box">まだ記録がありません</div>';
-        return;
-      }
-      target.innerHTML = entries.map((e, i) => `
-        <div class="row">
-          <div>
-            <div>${e.subject} / ${e.category}</div>
-            <div class="entry-meta">${e.material} ・ ${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="entry-time">${(e.durationMin).toFixed(0)}分</div>
-            <button class="small-btn secondary danger" onclick="deleteEntry(${i})">削除</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderWeeklyChart(entries) {
-      const target = $('weeklyChart');
-      const now = new Date();
-      const dayNames = ['月','火','水','木','金','土','日'];
-      const start = startOfWeek(now);
-      const buckets = Array.from({length: 7}, (_, i) => {
-        const dayStart = start + i * 86400000;
-        const dayEnd = dayStart + 86400000;
-        const mins = entries.filter(e => e.endAt >= dayStart && e.endAt < dayEnd)
-                          .reduce((sum, e) => sum + e.durationMin, 0);
-        return mins / 60;
-      });
-      const max = Math.max(...buckets, 1);
-      target.innerHTML = buckets.map((h, i) => `
-        <div class="bar-col">
-          <div class="bar-value">${h.toFixed(1)}h</div>
-          <div class="bar" style="height:${Math.max(6, (h / max) * 120)}px"></div>
-          <div class="bar-label">${dayNames[i]}</div>
-        </div>
-      `).join('');
-    }
-
-    function renderExamDate() {
-      const settings = getSettings();
-      $('examDate').value = settings.examDate || '';
-      $('weeklyGoal').value = settings.weeklyGoal || '';
-      if (!settings.examDate) {
-        $('daysLeft').textContent = '試験日 未設定';
-        return;
-      }
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const exam = new Date(settings.examDate + 'T00:00:00');
-      const diff = Math.ceil((exam - today) / 86400000);
-      $('daysLeft').textContent = diff >= 0 ? `試験まで ${diff}日` : `試験日経過 ${Math.abs(diff)}日`;
-    }
-
-    function render() {
-      const entries = getEntries();
-      renderMetrics(entries);
-      renderRecent(entries);
-      renderAll(entries);
-      renderWeeklyChart(entries);
-      renderExamDate();
-    }
-
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    function startTimer() {
-      if (timerStartAt) return;
-      timerStartAt = Date.now();
-      timerInterval = setInterval(() => {
-        $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt);
-      }, 1000);
-    }
-
-    function stopTimer() {
-      if (!timerStartAt) return;
-      const endAt = Date.now();
-      const durationMin = Math.max(1, Math.round((endAt - timerStartAt) / 60000));
-      addEntry({
-        subject: $('subject').value,
-        category: $('category').value,
-        material: $('material').value,
-        note: $('note').value.trim(),
-        startAt: timerStartAt,
-        endAt,
-        durationMin,
-      });
-      clearInterval(timerInterval);
-      timerInterval = null;
-      timerStartAt = null;
-      $('timerDisplay').textContent = '00:00:00';
-      $('note').value = '';
-    }
-
-    function deleteEntry(index) {
-      const entries = getEntries();
-      entries.splice(index, 1);
-      saveEntries(entries);
-      render();
-    }
-    window.deleteEntry = deleteEntry;
-
-    $('startBtn').addEventListener('click', startTimer);
-    $('stopBtn').addEventListener('click', stopTimer);
-    $('manualAddBtn').addEventListener('click', () => {
-      const minutes = Number($('manualMinutes').value);
-      if (!minutes || minutes <= 0) {
-        alert('分を入れてください');
-        return;
-      }
-      addEntry({
-        subject: $('manualSubject').value,
-        category: $('manualCategory').value,
-        material: $('manualMaterial').value,
-        note: $('manualNote').value.trim(),
-        startAt: Date.now() - minutes * 60000,
-        endAt: Date.now(),
-        durationMin: minutes,
-      });
-      $('manualMinutes').value = '';
-      $('manualNote').value = '';
-    });
-
-    $('saveSettingsBtn').addEventListener('click', () => {
-      saveSettings({
-        examDate: $('examDate').value,
-        weeklyGoal: Number($('weeklyGoal').value) || null,
-      });
-      render();
-      alert('保存しました');
-    });
-
-    $('clearBtn').addEventListener('click', () => {
-      if (!confirm('全データを削除しますか？')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      render();
-    });
-
-    $('exportBtn').addEventListener('click', () => {
-      const data = {
-        settings: getSettings(),
-        entries: getEntries(),
-        exportedAt: new Date().toISOString(),
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'studylog-export.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-
-    document.querySelectorAll('.tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const view = btn.dataset.view;
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        $('view-' + view).classList.add('active');
-      });
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      });
-    }
-
-    render();
-  </script>
+$('startBtn').addEventListener('click', startTimer);
+$('stopBtn').addEventListener('click', stopTimer);
+$('manualAddBtn').addEventListener('click', () => {
+  const minutes = Number($('manualMinutes').value), manualDate = $('manualDate').value;
+  if (!minutes || minutes <= 0){ alert('分を入れてください'); return; }
+  if (!manualDate){ alert('日付を入れてください'); return; }
+  const endAt = new Date(manualDate + 'T21:00:00').getTime();
+  addEntry({ subject:'消費税法', category:$('manualCategory').value, note:$('manualNote').value.trim(), startAt:endAt - minutes*60000, endAt, durationMin:minutes });
+  $('manualMinutes').value = ''; $('manualNote').value = '';
+});
+$('saveSettingsBtn').addEventListener('click', () => {
+  saveSettings({ startDate:$('startDate').value || '2026-03-01', examDate:$('examDate').value || '2026-08-06', targetHours:Number($('targetHours').value) || 450, weeklyGoal:Number($('weeklyGoal').value) || null });
+  render(); alert('設定を保存しました');
+});
+$('clearBtn').addEventListener('click', () => { if (!confirm('全データを削除しますか？')) return; localStorage.removeItem(STORAGE_KEY); render(); });
+$('exportBtn').addEventListener('click', () => {
+  const data = { settings:getSettings(), entries:getEntries(), exportedAt:new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'studylog-export.json'; a.click(); URL.revokeObjectURL(url);
+});
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); $('view-' + btn.dataset.view).classList.add('active');
+}));
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); }); }
+function render(){
+  renderStatusTime();
+  const settings = getSettings();
+  const entries = getEntries().sort((a,b) => b.endAt - a.endAt);
+  const scopedEntries = filteredByStart(entries, settings);
+  const plan = calcPlan(entries, settings);
+  renderMetrics(scopedEntries, settings, plan); renderWarning(plan); renderRecent(scopedEntries); renderAll(scopedEntries); renderWeeklyChart(scopedEntries, plan); renderSettings(settings, plan);
+}
+render();
+</script>
 </body>
 </html>
