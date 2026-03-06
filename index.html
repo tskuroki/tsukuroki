@@ -186,7 +186,16 @@
 
       <div class="card" style="margin-top:12px;">
         <div class="section-title">データ管理</div>
-        <div class="two"><button class="secondary" id="exportBtn">JSON書き出し</button><button class="secondary danger" id="clearBtn">全データ削除</button></div>
+        <div class="two">
+  <button class="secondary" id="exportBtn">JSON書き出し</button>
+  <button class="secondary" id="importBtn">JSON取り込み（追記）</button>
+</div>
+<div class="two" style="margin-top:10px;">
+  <button class="secondary" id="replaceImportBtn">JSON取り込み（上書き）</button>
+  <button class="secondary" id="dedupeBtn">重複整理</button>
+  <button class="secondary danger" id="clearBtn">全データ削除</button>
+</div>
+<input id="importFile" type="file" accept="application/json,.json" style="display:none;" />
       </div>
     </div>
   </div>
@@ -219,7 +228,7 @@ function startOfWeek(date=new Date()){ const d=new Date(date); const day=d.getDa
 function dateToTs(ymd){ return new Date(ymd+'T00:00:00').getTime(); }
 function escapeHtml(str){ const div=document.createElement('div'); div.textContent=str; return div.innerHTML; }
 function sumHours(entries){ return entries.reduce((s,e)=> s + e.durationMin/60, 0); }
-function addEntry(entry){ const entries=getEntries(); entries.unshift(entry); saveEntries(entries); render(); }
+function addEntry(entry){ const entries=getEntries(); entries.unshift(entry); saveEntries(dedupeEntries(entries)); render(); }
 function filteredByStart(entries, settings){ const start=dateToTs(settings.startDate); return entries.filter(e => e.endAt >= start); }
 
 function calcPlan(entries, settings){
@@ -328,6 +337,86 @@ function renderSettings(settings, plan){
   ];
   $('summaryRows').innerHTML = rows.map(([k,v]) => `<div class="row"><div><div>${k}</div></div><div class="entry-time">${v}</div></div>`).join('');
 }
+
+
+function entryKey(e){
+  return [e.subject || '消費税法', e.category || '', Number(e.startAt)||0, Number(e.endAt)||0, Number(e.durationMin)||0, e.note || ''].join('|');
+}
+function dedupeEntries(entries){
+  const seen = new Set();
+  const result = [];
+  for (const e of entries){
+    const key = entryKey(e);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(e);
+  }
+  return result;
+}
+
+function validateImportData(data){
+  if (!data || typeof data !== 'object') throw new Error('JSON形式が不正です');
+  if (!Array.isArray(data.entries)) throw new Error('entries が見つかりません');
+  const settings = data.settings && typeof data.settings === 'object' ? data.settings : defaultSettings();
+  const entries = data.entries.map((e, idx) => {
+    if (!e || typeof e !== 'object') throw new Error(`entries[${idx}] が不正です`);
+    const durationMin = Number(e.durationMin);
+    const startAt = Number(e.startAt);
+    const endAt = Number(e.endAt);
+    if (!Number.isFinite(durationMin) || durationMin <= 0) throw new Error(`entries[${idx}] の durationMin が不正です`);
+    if (!Number.isFinite(startAt) || !Number.isFinite(endAt)) throw new Error(`entries[${idx}] の日時が不正です`);
+    return {
+      subject: '消費税法',
+      category: String(e.category || 'その他'),
+      note: e.note ? String(e.note) : '',
+      startAt,
+      endAt,
+      durationMin
+    };
+  });
+  return {
+    settings: {
+      startDate: settings.startDate || defaultSettings().startDate,
+      examDate: settings.examDate || defaultSettings().examDate,
+      targetHours: Number(settings.targetHours) || defaultSettings().targetHours,
+      weeklyGoal: Number(settings.weeklyGoal) || null
+    },
+    entries
+  };
+}
+function handleImport(mode){
+  const input = $('importFile');
+  input.value = '';
+  input.onchange = async (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const data = validateImportData(parsed);
+      if (mode === 'replace') {
+        const deduped = dedupeEntries(data.entries);
+        saveEntries(deduped);
+        saveSettings(data.settings);
+        const skipped = Math.max(0, data.entries.length - deduped.length);
+        alert(`上書き取り込み完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
+      } else {
+        const before = getEntries();
+        const merged = dedupeEntries([...data.entries, ...before]);
+        saveEntries(merged);
+        if (confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
+        const added = Math.max(0, merged.length - dedupeEntries(before).length);
+        const skipped = Math.max(0, data.entries.length - added);
+        alert(`追記取り込み完了: ${added}件追加 / ${skipped}件重複スキップ`);
+      }
+      render();
+    } catch (err) {
+      alert('取り込みに失敗しました: ' + (err && err.message ? err.message : err));
+    }
+  };
+  input.click();
+}
+
 function startTimer(){ if (timerStartAt) return; timerStartAt = Date.now(); timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); renderStatusTime(); }, 1000); }
 function stopTimer(){
   if (!timerStartAt) return;
