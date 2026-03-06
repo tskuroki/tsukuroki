@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <title>Study Log</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1b2430;
+      --muted: #6b7280;
+      --line: #e7ebf2;
+      --accent: #111827;
+      --accent-soft: #e9eefb;
+      --green: #1f8f53;
+      --danger: #c0392b;
+      --shadow: 0 8px 24px rgba(17,24,39,.07);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    }
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px 14px 90px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 4px 16px;
+    }
+    h1 {
+      font-size: 28px;
+      margin: 0;
+      letter-spacing: -.02em;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .pill {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+    .metrics {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .timer {
+      padding: 18px;
+    }
+    .big-time {
+      font-size: 46px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      text-align: center;
+      margin: 10px 0 16px;
+    }
+    .controls, .two {
+      display: grid;
+      gap: 10px;
+    }
+    .controls { grid-template-columns: 1fr 1fr; }
+    .two { grid-template-columns: 1fr 1fr; }
+    button, select, input {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 14px 12px;
+      font-size: 16px;
+      color: var(--text);
+    }
+    button {
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .secondary {
+      background: #fff;
+    }
+    .danger {
+      color: var(--danger);
+    }
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .mini {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+    .row:first-child { border-top: none; }
+    .entry-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .entry-time {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .bar-wrap {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      align-items: end;
+      min-height: 170px;
+      margin-top: 10px;
+    }
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .bar {
+      width: 100%;
+      max-width: 40px;
+      border-radius: 12px 12px 8px 8px;
+      background: linear-gradient(180deg, #111827 0%, #7c8cab 100%);
+      min-height: 6px;
+    }
+    .bar-label, .bar-value {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .sticky-tabs {
+      position: fixed;
+      left: 50%; transform: translateX(-50%);
+      bottom: 14px;
+      width: min(730px, calc(100% - 24px));
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 8px;
+      z-index: 10;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      padding: 12px 8px;
+      border-radius: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .tab.active {
+      background: var(--accent-soft);
+      color: var(--text);
+      font-weight: 700;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    .muted-box {
+      background: #f9fbff;
+      border: 1px dashed #d7dfef;
+      color: var(--muted);
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 13px;
+    }
+    .small-btn {
+      padding: 8px 10px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+    @media (max-width: 640px) {
+      .metrics, .two, .controls { grid-template-columns: 1fr; }
+      .metric-value { font-size: 24px; }
+      .big-time { font-size: 40px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <h1>Study Log</h1>
+        <div class="sub">勉強時間をシンプルに記録・集計</div>
+      </div>
+      <div class="pill" id="daysLeft">試験日 未設定</div>
+    </div>
+
+    <div id="view-home" class="view active">
+      <div class="grid metrics">
+        <div class="card">
+          <div class="label">今日</div>
+          <div class="metric-value" id="todayHours">0.0h</div>
+        </div>
+        <div class="card">
+          <div class="label">今週</div>
+          <div class="metric-value" id="weekHours">0.0h</div>
+        </div>
+        <div class="card">
+          <div class="label">累計</div>
+          <div class="metric-value" id="totalHours">0.0h</div>
+        </div>
+      </div>
+
+      <div class="card timer" style="margin-top:12px;">
+        <div class="section-title">タイマー</div>
+        <div class="two" style="margin-bottom:10px;">
+          <select id="subject">
+            <option>消費税法</option>
+            <option>理論</option>
+            <option>計算</option>
+            <option>会計</option>
+            <option>その他</option>
+          </select>
+          <select id="category">
+            <option>理論</option>
+            <option>計算</option>
+            <option>講義</option>
+            <option>復習</option>
+            <option>演習</option>
+          </select>
+        </div>
+        <div class="two" style="margin-bottom:10px;">
+          <select id="material">
+            <option>TAC講義</option>
+            <option>理論テキスト</option>
+            <option>トレーニング</option>
+            <option>過去問</option>
+            <option>その他</option>
+          </select>
+          <input id="note" type="text" placeholder="メモ（任意）" />
+        </div>
+        <div class="big-time" id="timerDisplay">00:00:00</div>
+        <div class="controls">
+          <button class="primary" id="startBtn">開始</button>
+          <button class="secondary" id="stopBtn">終了して保存</button>
+        </div>
+        <div class="mini" style="margin-top:10px; text-align:center;">開始するとこの端末の保存領域に記録されます</div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">今週の推移</div>
+        <div class="bar-wrap" id="weeklyChart"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">最近の記録</div>
+        <div id="recentEntries"></div>
+      </div>
+    </div>
+
+    <div id="view-log" class="view">
+      <div class="card">
+        <div class="section-title">手動追加</div>
+        <div class="two" style="margin-bottom:10px;">
+          <select id="manualSubject">
+            <option>消費税法</option>
+            <option>理論</option>
+            <option>計算</option>
+            <option>会計</option>
+            <option>その他</option>
+          </select>
+          <select id="manualCategory">
+            <option>理論</option>
+            <option>計算</option>
+            <option>講義</option>
+            <option>復習</option>
+            <option>演習</option>
+          </select>
+        </div>
+        <div class="two" style="margin-bottom:10px;">
+          <select id="manualMaterial">
+            <option>TAC講義</option>
+            <option>理論テキスト</option>
+            <option>トレーニング</option>
+            <option>過去問</option>
+            <option>その他</option>
+          </select>
+          <input id="manualMinutes" type="number" min="1" placeholder="分 (例: 90)" />
+        </div>
+        <input id="manualNote" type="text" placeholder="メモ（任意）" style="margin-bottom:10px;"/>
+        <button class="primary" id="manualAddBtn">記録を追加</button>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">全記録</div>
+        <div id="allEntries"></div>
+      </div>
+    </div>
+
+    <div id="view-settings" class="view">
+      <div class="card">
+        <div class="section-title">設定</div>
+        <div class="two" style="margin-bottom:10px;">
+          <input id="examDate" type="date" />
+          <input id="weeklyGoal" type="number" min="1" placeholder="週目標時間 (例: 15)" />
+        </div>
+        <button class="primary" id="saveSettingsBtn">設定を保存</button>
+        <div class="muted-box" style="margin-top:12px;">
+          iPhoneで使うなら、Safariで開いて「共有 → ホーム画面に追加」でアプリっぽく使えます。
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">進捗</div>
+        <div class="row">
+          <div>
+            <div>今週の目標</div>
+            <div class="entry-meta" id="goalMeta">未設定</div>
+          </div>
+          <div class="entry-time" id="goalGap">-</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="section-title">データ管理</div>
+        <div class="two">
+          <button class="secondary small-btn" id="exportBtn">JSON書き出し</button>
+          <button class="secondary small-btn danger" id="clearBtn">全データ削除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sticky-tabs">
+    <button class="tab active" data-view="home">ホーム</button>
+    <button class="tab" data-view="log">記録</button>
+    <button class="tab" data-view="settings">設定</button>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'studylog_entries_v1';
+    const SETTINGS_KEY = 'studylog_settings_v1';
+
+    let timerInterval = null;
+    let timerStartAt = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function getEntries() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch { return []; }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function getSettings() {
+      try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
+      catch { return {}; }
+    }
+
+    function saveSettings(settings) {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function formatDuration(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    function formatHours(hours) {
+      return `${hours.toFixed(1)}h`;
+    }
+
+    function formatDate(ts) {
+      const d = new Date(ts);
+      return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function startOfDay(date = new Date()) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    }
+
+    function startOfWeek(date = new Date()) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = (day === 0 ? -6 : 1 - day);
+      d.setDate(d.getDate() + diff);
+      d.setHours(0,0,0,0);
+      return d.getTime();
+    }
+
+    function sumHours(entries) {
+      return entries.reduce((sum, e) => sum + e.durationMin / 60, 0);
+    }
+
+    function addEntry(entry) {
+      const entries = getEntries();
+      entries.unshift(entry);
+      saveEntries(entries);
+      render();
+    }
+
+    function renderMetrics(entries) {
+      const todayStart = startOfDay();
+      const weekStart = startOfWeek();
+      const today = entries.filter(e => e.endAt >= todayStart);
+      const week = entries.filter(e => e.endAt >= weekStart);
+      $('todayHours').textContent = formatHours(sumHours(today));
+      $('weekHours').textContent = formatHours(sumHours(week));
+      $('totalHours').textContent = formatHours(sumHours(entries));
+
+      const settings = getSettings();
+      if (settings.weeklyGoal) {
+        const gap = settings.weeklyGoal - sumHours(week);
+        $('goalMeta').textContent = `目標 ${settings.weeklyGoal}h / 実績 ${sumHours(week).toFixed(1)}h`;
+        $('goalGap').textContent = gap > 0 ? `あと ${gap.toFixed(1)}h` : `達成 +${Math.abs(gap).toFixed(1)}h`;
+      } else {
+        $('goalMeta').textContent = '未設定';
+        $('goalGap').textContent = '-';
+      }
+    }
+
+    function renderRecent(entries) {
+      const recent = entries.slice(0, 8);
+      const target = $('recentEntries');
+      if (!recent.length) {
+        target.innerHTML = '<div class="muted-box">まだ記録がありません</div>';
+        return;
+      }
+      target.innerHTML = recent.map((e) => `
+        <div class="row">
+          <div>
+            <div>${e.subject} / ${e.category}</div>
+            <div class="entry-meta">${e.material} ・ ${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div>
+          </div>
+          <div class="entry-time">${(e.durationMin).toFixed(0)}分</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAll(entries) {
+      const target = $('allEntries');
+      if (!entries.length) {
+        target.innerHTML = '<div class="muted-box">まだ記録がありません</div>';
+        return;
+      }
+      target.innerHTML = entries.map((e, i) => `
+        <div class="row">
+          <div>
+            <div>${e.subject} / ${e.category}</div>
+            <div class="entry-meta">${e.material} ・ ${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="entry-time">${(e.durationMin).toFixed(0)}分</div>
+            <button class="small-btn secondary danger" onclick="deleteEntry(${i})">削除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderWeeklyChart(entries) {
+      const target = $('weeklyChart');
+      const now = new Date();
+      const dayNames = ['月','火','水','木','金','土','日'];
+      const start = startOfWeek(now);
+      const buckets = Array.from({length: 7}, (_, i) => {
+        const dayStart = start + i * 86400000;
+        const dayEnd = dayStart + 86400000;
+        const mins = entries.filter(e => e.endAt >= dayStart && e.endAt < dayEnd)
+                          .reduce((sum, e) => sum + e.durationMin, 0);
+        return mins / 60;
+      });
+      const max = Math.max(...buckets, 1);
+      target.innerHTML = buckets.map((h, i) => `
+        <div class="bar-col">
+          <div class="bar-value">${h.toFixed(1)}h</div>
+          <div class="bar" style="height:${Math.max(6, (h / max) * 120)}px"></div>
+          <div class="bar-label">${dayNames[i]}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderExamDate() {
+      const settings = getSettings();
+      $('examDate').value = settings.examDate || '';
+      $('weeklyGoal').value = settings.weeklyGoal || '';
+      if (!settings.examDate) {
+        $('daysLeft').textContent = '試験日 未設定';
+        return;
+      }
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const exam = new Date(settings.examDate + 'T00:00:00');
+      const diff = Math.ceil((exam - today) / 86400000);
+      $('daysLeft').textContent = diff >= 0 ? `試験まで ${diff}日` : `試験日経過 ${Math.abs(diff)}日`;
+    }
+
+    function render() {
+      const entries = getEntries();
+      renderMetrics(entries);
+      renderRecent(entries);
+      renderAll(entries);
+      renderWeeklyChart(entries);
+      renderExamDate();
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function startTimer() {
+      if (timerStartAt) return;
+      timerStartAt = Date.now();
+      timerInterval = setInterval(() => {
+        $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (!timerStartAt) return;
+      const endAt = Date.now();
+      const durationMin = Math.max(1, Math.round((endAt - timerStartAt) / 60000));
+      addEntry({
+        subject: $('subject').value,
+        category: $('category').value,
+        material: $('material').value,
+        note: $('note').value.trim(),
+        startAt: timerStartAt,
+        endAt,
+        durationMin,
+      });
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerStartAt = null;
+      $('timerDisplay').textContent = '00:00:00';
+      $('note').value = '';
+    }
+
+    function deleteEntry(index) {
+      const entries = getEntries();
+      entries.splice(index, 1);
+      saveEntries(entries);
+      render();
+    }
+    window.deleteEntry = deleteEntry;
+
+    $('startBtn').addEventListener('click', startTimer);
+    $('stopBtn').addEventListener('click', stopTimer);
+    $('manualAddBtn').addEventListener('click', () => {
+      const minutes = Number($('manualMinutes').value);
+      if (!minutes || minutes <= 0) {
+        alert('分を入れてください');
+        return;
+      }
+      addEntry({
+        subject: $('manualSubject').value,
+        category: $('manualCategory').value,
+        material: $('manualMaterial').value,
+        note: $('manualNote').value.trim(),
+        startAt: Date.now() - minutes * 60000,
+        endAt: Date.now(),
+        durationMin: minutes,
+      });
+      $('manualMinutes').value = '';
+      $('manualNote').value = '';
+    });
+
+    $('saveSettingsBtn').addEventListener('click', () => {
+      saveSettings({
+        examDate: $('examDate').value,
+        weeklyGoal: Number($('weeklyGoal').value) || null,
+      });
+      render();
+      alert('保存しました');
+    });
+
+    $('clearBtn').addEventListener('click', () => {
+      if (!confirm('全データを削除しますか？')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+    });
+
+    $('exportBtn').addEventListener('click', () => {
+      const data = {
+        settings: getSettings(),
+        entries: getEntries(),
+        exportedAt: new Date().toISOString(),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'studylog-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = btn.dataset.view;
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        $('view-' + view).classList.add('active');
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
