@@ -192,13 +192,9 @@
 </div>
 <div class="stack" style="margin-top:10px;">
   <label class="muted-box" for="importFile" style="display:block; cursor:pointer;">
-    復旧するJSONを選択（先にファイルを選んでから、追記/上書きボタンを押す）
-    <input id="importFile" type="file" accept="application/json,.json" style="margin-top:10px;" />
+    復旧するJSONを選択
+    <div style="margin-top:6px;">選択後に「上書きで復旧する？」と確認が出ます。キャンセルなら追記です。</div><input id="importFile" type="file" accept="application/json,.json" style="margin-top:10px;" />
   </label>
-  <div class="two">
-    <button class="secondary" id="importBtn">JSON取り込み（追記）</button>
-    <button class="secondary" id="replaceImportBtn">JSON取り込み（上書き）</button>
-  </div>
   <button class="secondary danger" id="clearBtn">全データ削除</button>
 </div>
       </div>
@@ -390,17 +386,16 @@ function validateImportData(data){
   };
 }
 
-function handleImport(mode){
+
+function handleImportFromSelectedFile(){
   const input = $('importFile');
   const file = input.files && input.files[0];
-  if (!file){
-    alert('先にJSONファイルを選んでください');
-    return;
-  }
+  if (!file) return;
   file.text().then((text) => {
     const parsed = JSON.parse(text);
     const data = validateImportData(parsed);
-    if (mode === 'replace') {
+    const replaceMode = confirm('上書きで復旧しますか？\nOK = 上書き / キャンセル = 追記');
+    if (replaceMode) {
       const deduped = dedupeEntries(data.entries);
       saveEntries(deduped);
       saveSettings(data.settings);
@@ -419,6 +414,7 @@ function handleImport(mode){
     render();
   }).catch((err) => {
     alert('取り込みに失敗しました: ' + (err && err.message ? err.message : err));
+    input.value = '';
   });
 }
 function startTimer(){ if (timerStartAt) return; timerStartAt = Date.now(); timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); renderStatusTime(); }, 1000); }
