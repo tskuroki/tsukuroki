@@ -96,7 +96,7 @@
       </div>
       <div class="hero-meta">
         <div class="mini-card"><div class="mini-label">開始日</div><div class="mini-value" id="startDateLabel">2026/3/1</div></div>
-        <div class="mini-card"><div class="mini-label">総目標時間</div><div class="mini-value" id="targetHoursLabel">450h</div></div>
+        <div class="mini-card"><div class="mini-label">総目標時間</div><div class="mini-value" id="targetHoursLabel">360h</div></div>
       </div>
     </div>
 
@@ -137,7 +137,7 @@
 
       <div class="card" style="margin-top:12px;">
         <div class="section-title">今週の累計進捗グラフ</div>
-        <div class="section-sub">青 = 実績累計 / オレンジ = その曜日終了時点の必要累計</div>
+        <div class="section-sub">青 = 実績累計 / オレンジ = その曜日終了時点の必要累計（平日1.5h固定、土日で残り配分）</div>
         <div class="bar-wrap" id="weeklyChart"></div>
       </div>
 
@@ -175,7 +175,7 @@
           <div class="two"><input id="startDate" type="date" /><input id="examDate" type="date" /></div>
           <div class="two"><input id="targetHours" type="number" min="1" placeholder="総目標時間 (例: 450)" /><input id="weeklyGoal" type="number" min="1" placeholder="手動週目標（任意）" /></div>
           <button class="primary" id="saveSettingsBtn">設定を保存</button>
-          <div class="muted-box">開始日は 2026/3/1 を初期設定にしています。<br>試験日は 2026/8/6 を初期値にしています。必要なら変更してください。</div>
+          <div class="muted-box">開始日は 2026/3/1 を初期設定にしています。<br>試験日は 2026/8/6 を初期値、総目標時間は 360h を初期値にしています。平日1.5h・土日で残りを埋める配分です。</div>
         </div>
       </div>
 
