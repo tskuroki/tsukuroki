@@ -188,14 +188,19 @@
         <div class="section-title">データ管理</div>
         <div class="two">
   <button class="secondary" id="exportBtn">JSON書き出し</button>
-  <button class="secondary" id="importBtn">JSON取り込み（追記）</button>
-</div>
-<div class="two" style="margin-top:10px;">
-  <button class="secondary" id="replaceImportBtn">JSON取り込み（上書き）</button>
   <button class="secondary" id="dedupeBtn">重複整理</button>
+</div>
+<div class="stack" style="margin-top:10px;">
+  <label class="muted-box" for="importFile" style="display:block; cursor:pointer;">
+    復旧するJSONを選択（先にファイルを選んでから、追記/上書きボタンを押す）
+    <input id="importFile" type="file" accept="application/json,.json" style="margin-top:10px;" />
+  </label>
+  <div class="two">
+    <button class="secondary" id="importBtn">JSON取り込み（追記）</button>
+    <button class="secondary" id="replaceImportBtn">JSON取り込み（上書き）</button>
+  </div>
   <button class="secondary danger" id="clearBtn">全データ削除</button>
 </div>
-<input id="importFile" type="file" accept="application/json,.json" style="display:none;" />
       </div>
     </div>
   </div>
@@ -384,39 +389,38 @@ function validateImportData(data){
     entries
   };
 }
+
 function handleImport(mode){
   const input = $('importFile');
-  input.value = '';
-  input.onchange = async (ev) => {
-    const file = ev.target.files && ev.target.files[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      const data = validateImportData(parsed);
-      if (mode === 'replace') {
-        const deduped = dedupeEntries(data.entries);
-        saveEntries(deduped);
-        saveSettings(data.settings);
-        const skipped = Math.max(0, data.entries.length - deduped.length);
-        alert(`上書き取り込み完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
-      } else {
-        const before = getEntries();
-        const merged = dedupeEntries([...data.entries, ...before]);
-        saveEntries(merged);
-        if (confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
-        const added = Math.max(0, merged.length - dedupeEntries(before).length);
-        const skipped = Math.max(0, data.entries.length - added);
-        alert(`追記取り込み完了: ${added}件追加 / ${skipped}件重複スキップ`);
-      }
-      render();
-    } catch (err) {
-      alert('取り込みに失敗しました: ' + (err && err.message ? err.message : err));
+  const file = input.files && input.files[0];
+  if (!file){
+    alert('先にJSONファイルを選んでください');
+    return;
+  }
+  file.text().then((text) => {
+    const parsed = JSON.parse(text);
+    const data = validateImportData(parsed);
+    if (mode === 'replace') {
+      const deduped = dedupeEntries(data.entries);
+      saveEntries(deduped);
+      saveSettings(data.settings);
+      const skipped = Math.max(0, data.entries.length - deduped.length);
+      alert(`上書き取り込み完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
+    } else {
+      const before = getEntries();
+      const merged = dedupeEntries([...data.entries, ...before]);
+      saveEntries(merged);
+      if (confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
+      const added = Math.max(0, merged.length - dedupeEntries(before).length);
+      const skipped = Math.max(0, data.entries.length - added);
+      alert(`追記取り込み完了: ${added}件追加 / ${skipped}件重複スキップ`);
     }
-  };
-  input.click();
+    input.value = '';
+    render();
+  }).catch((err) => {
+    alert('取り込みに失敗しました: ' + (err && err.message ? err.message : err));
+  });
 }
-
 function startTimer(){ if (timerStartAt) return; timerStartAt = Date.now(); timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); renderStatusTime(); }, 1000); }
 function stopTimer(){
   if (!timerStartAt) return;
