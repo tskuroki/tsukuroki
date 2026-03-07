@@ -387,20 +387,60 @@ function validateImportData(data){
 }
 
 
-function handleImportFromSelectedFile(){
+
+
+function setImportStatus(text){
+  const el = $('importStatus');
+  if (el) el.textContent = text;
+}
+function parseImportText(){
+  const text = $('importText').value.trim();
+  if (!text) throw new Error('JSONが空です');
+  const parsed = JSON.parse(text);
+  return validateImportData(parsed);
+}
+function fillImportTextFromFile(){
   const input = $('importFile');
   const file = input.files && input.files[0];
-  if (!file) return;
+  if (!file){
+    setImportStatus('まだJSONは読み込まれていません');
+    return;
+  }
+  setImportStatus(`読込中: ${file.name}`);
   file.text().then((text) => {
-    const parsed = JSON.parse(text);
-    const data = validateImportData(parsed);
-    const replaceMode = confirm('上書きで復旧しますか？\nOK = 上書き / キャンセル = 追記');
-    if (replaceMode) {
+    $('importText').value = text;
+    try{
+      const data = validateImportData(JSON.parse(text));
+      setImportStatus(`${file.name} / ${data.entries.length}件 読み込み済み`);
+    }catch(err){
+      setImportStatus(`${file.name} / JSON形式エラー`);
+      alert('JSON確認でエラー: ' + (err && err.message ? err.message : err));
+    }
+  }).catch((err) => {
+    setImportStatus('読込失敗');
+    alert('ファイル読込に失敗しました: ' + (err && err.message ? err.message : err));
+  });
+}
+function validateImportPreview(){
+  try{
+    const data = parseImportText();
+    setImportStatus(`確認OK: ${data.entries.length}件 / 目標 ${data.settings.targetHours}h / 開始日 ${data.settings.startDate}`);
+    alert(`JSON確認OK\n記録: ${data.entries.length}件\n目標: ${data.settings.targetHours}h\n開始日: ${data.settings.startDate}`);
+  }catch(err){
+    setImportStatus('JSON確認エラー');
+    alert('JSON確認でエラー: ' + (err && err.message ? err.message : err));
+  }
+}
+function importFromText(mode){
+  try{
+    const data = parseImportText();
+    if (mode === 'replace') {
       const deduped = dedupeEntries(data.entries);
       saveEntries(deduped);
       saveSettings(data.settings);
       const skipped = Math.max(0, data.entries.length - deduped.length);
-      alert(`上書き取り込み完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
+      setImportStatus(`上書き復旧完了: ${deduped.length}件`);
+      alert(`上書き復旧完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
     } else {
       const before = getEntries();
       const merged = dedupeEntries([...data.entries, ...before]);
@@ -408,14 +448,14 @@ function handleImportFromSelectedFile(){
       if (confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
       const added = Math.max(0, merged.length - dedupeEntries(before).length);
       const skipped = Math.max(0, data.entries.length - added);
-      alert(`追記取り込み完了: ${added}件追加 / ${skipped}件重複スキップ`);
+      setImportStatus(`追記復旧完了: ${added}件追加`);
+      alert(`追記復旧完了: ${added}件追加 / ${skipped}件重複スキップ`);
     }
-    input.value = '';
     render();
-  }).catch((err) => {
-    alert('取り込みに失敗しました: ' + (err && err.message ? err.message : err));
-    input.value = '';
-  });
+  }catch(err){
+    setImportStatus('復旧エラー');
+    alert('復旧に失敗しました: ' + (err && err.message ? err.message : err));
+  }
 }
 function startTimer(){ if (timerStartAt) return; timerStartAt = Date.now(); timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); renderStatusTime(); }, 1000); }
 function stopTimer(){
