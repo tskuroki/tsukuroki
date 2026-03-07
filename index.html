@@ -186,27 +186,45 @@
 
       <div class="card" style="margin-top:12px;">
         <div class="section-title">データ管理</div>
-        <div class="two">
-          <button class="secondary" id="exportBtn">JSON書き出し</button>
-          <button class="secondary" id="dedupeBtn">重複整理</button>
-        </div>
-        <div class="stack" style="margin-top:10px;">
-          <div class="muted-box">
-            <div>復旧用JSON</div>
-            <div style="margin-top:6px;">1) JSONファイルを選ぶ → 2) 読み込み結果を確認 → 3) 上書き復旧 or 追記復旧</div>
-            <input id="importFile" type="file" accept="application/json,.json" style="margin-top:10px;" />
-            <div id="importStatus" style="margin-top:10px;">まだJSONは読み込まれていません</div>
-          </div>
-          <textarea id="importText" placeholder="ここにJSON全文を貼り付けても復旧できます" style="min-height:200px; width:100%; border:none; outline:none; background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:16px; padding:14px; color:var(--text); font:inherit;"></textarea>
+        <div class="stack">
+
           <div class="two">
-            <button class="secondary" id="validateImportBtn">JSON確認</button>
-            <button class="secondary" id="clearImportTextBtn">読込欄クリア</button>
+            <button class="secondary" id="exportBtn">📤 JSON書き出し</button>
+            <button class="secondary" id="dedupeBtn">🧹 重複整理</button>
           </div>
-          <div class="two">
-            <button class="primary" id="replaceImportBtn">上書き復旧</button>
-            <button class="secondary" id="appendImportBtn">追記復旧</button>
+
+          <div class="muted-box" style="font-size:12px; line-height:1.6;">
+            <strong>📱 iPhoneでの保存方法</strong><br>
+            「JSON書き出し」→ 開いたページで共有ボタン → 「ファイルに保存」
           </div>
-          <button class="secondary danger" id="clearBtn">全データ削除</button>
+
+          <div style="border-top:1px solid var(--line); padding-top:12px;">
+            <div class="section-title" style="font-size:15px; margin-bottom:8px;">📥 バックアップから復旧</div>
+
+            <div class="stack">
+              <label style="display:block; background:rgba(0,122,255,.07); border:1.5px dashed rgba(0,122,255,.35); border-radius:16px; padding:14px; cursor:pointer; text-align:center; font-size:13px; color:var(--accent); font-weight:700;">
+                JSONファイルを選択してタップ
+                <input id="importFile" type="file" accept="application/json,.json" style="display:none;" />
+              </label>
+
+              <div id="importStatus" class="muted-box" style="font-size:12px; min-height:36px;">まだJSONは読み込まれていません</div>
+
+              <textarea id="importText" style="display:none;"></textarea>
+
+              <div class="two">
+                <button class="secondary" id="importPreviewBtn" style="font-size:13px;">🔍 JSON確認</button>
+                <button class="primary" id="importReplaceBtn" style="font-size:13px;">⬆️ 上書きで復旧</button>
+              </div>
+              <button class="secondary" id="importMergeBtn" style="font-size:13px;">➕ 追記で復旧（既存データを残す）</button>
+
+              <div class="muted-box" style="font-size:12px; line-height:1.6;">
+                <strong>上書き復旧</strong>：JSONの内容で完全に置き換え<br>
+                <strong>追記復旧</strong>：今のデータに加えて追加（重複は自動除去）
+              </div>
+            </div>
+          </div>
+
+          <button class="secondary danger" id="clearBtn" style="margin-top:4px;">🗑 全データ削除</button>
         </div>
       </div>
     </div>
@@ -404,13 +422,15 @@ function setImportStatus(text){
   const el = $('importStatus');
   if (el) el.textContent = text;
 }
-function parseImportPayload(text){
+function parseImportText(){
+  const text = $('importText').value.trim();
+  if (!text) throw new Error('JSONが空です');
   const parsed = JSON.parse(text);
   return validateImportData(parsed);
 }
-function loadImportFile(){
+function fillImportTextFromFile(){
   const input = $('importFile');
-  const file = input && input.files && input.files[0];
+  const file = input.files && input.files[0];
   if (!file){
     setImportStatus('まだJSONは読み込まれていません');
     return;
@@ -419,25 +439,20 @@ function loadImportFile(){
   file.text().then((text) => {
     $('importText').value = text;
     try{
-      const data = parseImportPayload(text);
+      const data = validateImportData(JSON.parse(text));
       setImportStatus(`${file.name} / ${data.entries.length}件 読み込み済み`);
     }catch(err){
-      setImportStatus(`${file.name} / JSONエラー`);
+      setImportStatus(`${file.name} / JSON形式エラー`);
       alert('JSON確認でエラー: ' + (err && err.message ? err.message : err));
     }
   }).catch((err) => {
-    setImportStatus('ファイル読込失敗');
+    setImportStatus('読込失敗');
     alert('ファイル読込に失敗しました: ' + (err && err.message ? err.message : err));
   });
 }
-function getImportDataFromTextarea(){
-  const text = $('importText').value.trim();
-  if (!text) throw new Error('JSONが空です');
-  return parseImportPayload(text);
-}
 function validateImportPreview(){
   try{
-    const data = getImportDataFromTextarea();
+    const data = parseImportText();
     setImportStatus(`確認OK: ${data.entries.length}件 / 目標 ${data.settings.targetHours}h / 開始日 ${data.settings.startDate}`);
     alert(`JSON確認OK\n記録: ${data.entries.length}件\n目標: ${data.settings.targetHours}h\n開始日: ${data.settings.startDate}`);
   }catch(err){
@@ -445,10 +460,10 @@ function validateImportPreview(){
     alert('JSON確認でエラー: ' + (err && err.message ? err.message : err));
   }
 }
-function restoreFromImport(mode){
+function importFromText(mode){
   try{
-    const data = getImportDataFromTextarea();
-    if (mode === 'replace'){
+    const data = parseImportText();
+    if (mode === 'replace') {
       const deduped = dedupeEntries(data.entries);
       saveEntries(deduped);
       saveSettings(data.settings);
@@ -457,11 +472,10 @@ function restoreFromImport(mode){
       alert(`上書き復旧完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
     } else {
       const before = getEntries();
-      const beforeD = dedupeEntries(before);
-      const merged = dedupeEntries([...data.entries, ...beforeD]);
+      const merged = dedupeEntries([...data.entries, ...before]);
       saveEntries(merged);
       if (confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
-      const added = Math.max(0, merged.length - beforeD.length);
+      const added = Math.max(0, merged.length - dedupeEntries(before).length);
       const skipped = Math.max(0, data.entries.length - added);
       setImportStatus(`追記復旧完了: ${added}件追加`);
       alert(`追記復旧完了: ${added}件追加 / ${skipped}件重複スキップ`);
@@ -497,12 +511,53 @@ $('saveSettingsBtn').addEventListener('click', () => {
   saveSettings({ startDate:$('startDate').value || '2026-03-01', examDate:$('examDate').value || '2026-08-06', targetHours:Number($('targetHours').value) || 450, weeklyGoal:Number($('weeklyGoal').value) || null });
   render(); alert('設定を保存しました');
 });
-$('clearBtn').addEventListener('click', () => { if (!confirm('全データを削除しますか？')) return; localStorage.removeItem(STORAGE_KEY); render(); });
+$('clearBtn').addEventListener('click', () => { if (!confirm('全データを削除しますか？')) return; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SETTINGS_KEY); render(); alert('削除しました'); });
+
 $('exportBtn').addEventListener('click', () => {
   const data = { settings:getSettings(), entries:getEntries(), exportedAt:new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'studylog-export.json'; a.click(); URL.revokeObjectURL(url);
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  // iOS Safari: Web Share API → fallback → new window
+  if (navigator.share) {
+    const file = new File([blob], 'studylog-export.json', { type:'application/json' });
+    navigator.share({ files:[file], title:'StudyLog バックアップ' })
+      .catch(() => { window.open(url, '_blank'); })
+      .finally(() => { setTimeout(() => URL.revokeObjectURL(url), 10000); });
+  } else {
+    const a = document.createElement('a'); a.href = url; a.download = 'studylog-export.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
 });
+
+$('dedupeBtn').addEventListener('click', () => {
+  const before = getEntries(); const after = dedupeEntries(before);
+  const removed = before.length - after.length;
+  saveEntries(after); render();
+  alert(removed > 0 ? `重複 ${removed} 件を削除しました（残り ${after.length} 件）` : `重複はありませんでした（${after.length} 件）`);
+});
+
+$('importFile').addEventListener('change', () => {
+  const file = $('importFile').files && $('importFile').files[0];
+  if (!file) { setImportStatus('まだJSONは読み込まれていません'); return; }
+  setImportStatus(`読込中: ${file.name}`);
+  file.text().then((text) => {
+    $('importText').value = text;
+    try {
+      const data = validateImportData(JSON.parse(text));
+      setImportStatus(`✅ ${file.name} — ${data.entries.length}件 読み込み済み。「確認」または復旧ボタンを押してください。`);
+    } catch(err) {
+      setImportStatus(`❌ ${file.name} — JSON形式エラー: ${err && err.message ? err.message : err}`);
+    }
+  }).catch((err) => {
+    setImportStatus('❌ 読込失敗: ' + (err && err.message ? err.message : err));
+  });
+});
+
+$('importPreviewBtn').addEventListener('click', validateImportPreview);
+$('importReplaceBtn').addEventListener('click', () => importFromText('replace'));
+$('importMergeBtn').addEventListener('click', () => importFromText('merge'));
 document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); $('view-' + btn.dataset.view).classList.add('active');
