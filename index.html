@@ -9,231 +9,999 @@
   <title>Study Log</title>
   <link rel="manifest" href="manifest.json" />
   <style>
-    :root{
-      --bg:#f2f2f7; --card:rgba(255,255,255,.84); --text:#111; --muted:#6e6e73;
-      --line:rgba(60,60,67,.12); --accent:#007aff; --green:#34c759; --orange:#ff9f0a; --red:#ff3b30;
-      --shadow:0 12px 28px rgba(17,17,17,.08); --radius:24px;
+    :root {
+      --bg: #f2f2f7;
+      --bg2: #ffffff;
+      --card: #ffffff;
+      --text: #000000;
+      --text2: #3c3c43;
+      --muted: rgba(60,60,67,.6);
+      --muted2: rgba(60,60,67,.3);
+      --line: rgba(60,60,67,.18);
+      --line-light: rgba(60,60,67,.10);
+      --accent: #007aff;
+      --accent-light: rgba(0,122,255,.12);
+      --green: #34c759;
+      --green-light: rgba(52,199,89,.14);
+      --orange: #ff9f0a;
+      --orange-light: rgba(255,159,10,.14);
+      --red: #ff3b30;
+      --red-light: rgba(255,59,48,.12);
+      --purple: #af52de;
+      --teal: #30b0c7;
+      --indigo: #5856d6;
+      --fill: rgba(120,120,128,.12);
+      --fill2: rgba(120,120,128,.16);
+      --fill3: rgba(120,120,128,.20);
+      --radius-card: 16px;
+      --radius-inner: 12px;
+      --tab-height: 83px;
+      --shadow-card: 0 1px 0 rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
     }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-    html,body{height:100%;}
-    body{
-      margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif; color:var(--text);
-      background:radial-gradient(circle at top left, rgba(255,255,255,.95), transparent 28%), linear-gradient(180deg,#f9f9fc 0%, #f2f2f7 42%, #edf1f7 100%);
-      padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+    html, body { height: 100%; background: var(--bg); }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .app{max-width:760px; margin:0 auto; padding:12px 14px 108px;}
-    .status{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 8px;font-size:13px;font-weight:700;}
-    .status-right{display:flex;gap:5px;align-items:center;}
-    .sig{display:inline-block;width:3px;background:#111;border-radius:9px;}
-    .sig:nth-child(1){height:6px}.sig:nth-child(2){height:9px}.sig:nth-child(3){height:12px}
-    .battery{width:20px;height:10px;border:1.8px solid #111;border-radius:3px;position:relative}
-    .battery:after{content:"";position:absolute;right:-3px;top:2px;width:2px;height:4px;background:#111;border-radius:1px}
-    .battery .fill{position:absolute;left:1px;top:1px;bottom:1px;width:13px;background:#111;border-radius:2px}
-    .hero,.card,.sticky-tabs{backdrop-filter:blur(18px);}
-    .hero{
-      background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.82));
-      border:1px solid rgba(255,255,255,.7); box-shadow:var(--shadow); border-radius:28px; padding:18px 18px 16px; margin-bottom:14px;
+
+    /* ── Scrollable App Shell ── */
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 0 0 calc(var(--tab-height) + 12px);
+      min-height: 100vh;
     }
-    .hero-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
-    h1{margin:0;font-size:30px;line-height:1.04;letter-spacing:-.03em;}
-    .sub{margin-top:6px;color:var(--muted);font-size:13px}
-    .pill{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:10px 12px;font-size:12px;color:var(--muted);white-space:nowrap;}
-    .hero-meta,.metrics,.two,.three,.controls,.sticky-tabs{display:grid;gap:10px}
-    .hero-meta{margin-top:14px;grid-template-columns:repeat(2,1fr)}
-    .mini-card{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.76);border-radius:18px;padding:12px;}
-    .mini-label{font-size:12px;color:var(--muted);margin-bottom:4px}
-    .mini-value{font-size:18px;font-weight:800}
-    .metrics{grid-template-columns:repeat(3,1fr)}
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.76);box-shadow:var(--shadow);border-radius:var(--radius);padding:16px;}
-    .metric-value{font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-top:8px}
-    .label,.section-sub,.progress-meta,.entry-meta,.hint{font-size:12px;color:var(--muted)}
-    .section-title{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
-    .stack{display:grid;gap:10px}
-    .two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)} .controls{grid-template-columns:1fr 1fr}
-    input,select,button{width:100%;font:inherit} 
-    input,select{border:none;outline:none;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:16px;padding:14px;color:var(--text)}
-    button{border:none;border-radius:18px;padding:14px 16px;font-weight:700;cursor:pointer}
-    .primary{background:var(--accent);color:#fff} .secondary{background:#fff;color:#111;border:1px solid var(--line)} .danger{color:var(--red)}
-    .big-time{text-align:center;font-size:42px;font-weight:800;letter-spacing:-.04em;margin:10px 0 12px}
-    .progress-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
-    .progress-track{height:12px;background:rgba(60,60,67,.08);border-radius:999px;overflow:hidden}
-    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#69afff 0%, var(--accent) 100%);border-radius:999px;transition:width .3s ease}
-    .warning{padding:14px;border-radius:18px;border:1px solid transparent}.warning.ok{background:rgba(52,199,89,.10);border-color:rgba(52,199,89,.18)}.warning.warn{background:rgba(255,159,10,.12);border-color:rgba(255,159,10,.22)}.warning.danger{background:rgba(255,59,48,.10);border-color:rgba(255,59,48,.18)}
-    .warning-title{font-weight:800}.warning-body{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.45}
-    .bar-wrap{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;min-height:190px;margin-top:10px}
-    .bar-col{display:flex;flex-direction:column;align-items:center;gap:6px}
-    .bar-stack{width:100%;max-width:34px;height:130px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
-    .bar{width:100%;border-radius:14px 14px 10px 10px;min-height:6px;background:linear-gradient(180deg,#7bbcff 0%, var(--accent) 100%);box-shadow:inset 0 -10px 16px rgba(0,0,0,.08)}
-    .marker{width:100%;border-radius:10px;background:rgba(255,159,10,.28);min-height:4px;border:1px solid rgba(255,159,10,.4)}
-    .bar-value,.bar-label,.bar-target{font-size:11px;color:var(--muted);text-align:center}
-    .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)} .row:first-child{border-top:none}
-    .entry-time{font-weight:800;white-space:nowrap}.small-btn{padding:8px 10px;border-radius:12px;font-size:12px}
-    .muted-box{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--muted);font-size:13px;line-height:1.5}
-    .sticky-tabs{
-      position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:10;width:min(760px, calc(100% - 18px));
-      padding:10px;background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.75);box-shadow:0 14px 30px rgba(0,0,0,.10);border-radius:24px;
-      grid-template-columns:repeat(3,1fr)
+
+    /* ── Large Title Header ── */
+    .nav-header {
+      padding: 12px 20px 8px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(242,242,247,.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 0.5px solid var(--line);
     }
-    .tab{background:transparent;border:0;border-radius:18px;padding:12px 10px;font-weight:700;color:var(--muted)}
-    .tab.active{background:rgba(0,122,255,.10);color:var(--accent)} .view{display:none} .view.active{display:block}
-    @media (max-width:560px){ .metrics,.two,.three,.hero-meta{grid-template-columns:1fr} .big-time{font-size:38px} .metric-value{font-size:28px}}
+
+    .nav-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .nav-large-title {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1.06;
+      color: var(--text);
+    }
+
+    .nav-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+      margin-bottom: 4px;
+    }
+
+    .nav-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+      font-weight: 400;
+    }
+
+    /* ── Section grouping ── */
+    .section {
+      padding: 0 16px;
+      margin-top: 28px;
+    }
+    .section:first-child { margin-top: 20px; }
+
+    .section-header {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 0 4px 6px;
+    }
+
+    /* ── iOS Grouped Card ── */
+    .ios-card {
+      background: var(--card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .ios-card-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      gap: 10px;
+      min-height: 46px;
+      position: relative;
+    }
+
+    .ios-card-row + .ios-card-row::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 16px; right: 0;
+      height: 0.5px;
+      background: var(--line);
+    }
+
+    .ios-card-label {
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .ios-card-value {
+      font-size: 17px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* ── Metric tiles ── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .metric-tile {
+      background: var(--card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: 14px 12px 12px;
+    }
+
+    .metric-tile-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .metric-tile-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      margin-top: 4px;
+      color: var(--text);
+    }
+
+    .metric-tile-value.accent { color: var(--accent); }
+    .metric-tile-value.green { color: var(--green); }
+    .metric-tile-value.orange { color: var(--orange); }
+
+    /* ── Progress bar iOS-style ── */
+    .progress-section {
+      padding: 14px 16px;
+    }
+
+    .progress-section + .progress-section {
+      border-top: 0.5px solid var(--line);
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .progress-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .progress-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .progress-pct {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--fill2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 0.5s cubic-bezier(.23,1,.32,1);
+    }
+
+    .progress-bar.green { background: var(--green); }
+    .progress-bar.orange { background: var(--orange); }
+    .progress-gap-pill {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+    .progress-gap-pill.pos { background: var(--green-light); color: var(--green); }
+    .progress-gap-pill.neg { background: var(--orange-light); color: var(--orange); }
+
+    /* ── Warning card ── */
+    .warning-card {
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .warning-card.ok { background: var(--green-light); }
+    .warning-card.warn { background: var(--orange-light); }
+    .warning-card.danger { background: var(--red-light); }
+
+    .warning-icon {
+      font-size: 22px;
+      line-height: 1;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .warning-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .warning-card.ok .warning-title { color: var(--green); }
+    .warning-card.warn .warning-title { color: var(--orange); }
+    .warning-card.danger .warning-title { color: var(--red); }
+
+    .warning-body {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    /* ── Timer ── */
+    .timer-section {
+      padding: 16px 16px 0;
+    }
+
+    .timer-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 12px;
+    }
+    .timer-chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex-shrink: 0;
+      border: 1.5px solid var(--line);
+      background: var(--fill);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      -webkit-user-select: none;
+    }
+    .chip.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .timer-note-input {
+      width: 100%;
+      background: var(--fill);
+      border: none;
+      outline: none;
+      border-radius: var(--radius-inner);
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 15px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .timer-note-input::placeholder { color: var(--muted); }
+
+    .big-timer {
+      text-align: center;
+      font-size: 64px;
+      font-weight: 200;
+      letter-spacing: -2px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      padding: 12px 0 20px;
+      line-height: 1;
+    }
+    .big-timer.running {
+      color: var(--accent);
+    }
+
+    .timer-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 16px 16px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 16px 14px;
+    }
+
+    /* ── iOS-style buttons ── */
+    button, input, select { font: inherit; }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: var(--radius-inner);
+      padding: 14px 16px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.12s ease, transform 0.1s ease;
+      -webkit-user-select: none;
+    }
+    .btn:active { opacity: 0.72; transform: scale(0.97); }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--fill2); color: var(--accent); }
+    .btn-danger { background: var(--fill2); color: var(--red); }
+    .btn-outline { background: var(--card); color: var(--accent); box-shadow: var(--shadow-card); }
+
+    /* ── Chart ── */
+    .chart-wrap {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      align-items: end;
+      padding: 8px 16px 16px;
+      min-height: 180px;
+    }
+
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bar-value {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .bar-stack {
+      width: 100%;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 3px;
+      position: relative;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 6px 6px 4px 4px;
+      min-height: 4px;
+      background: linear-gradient(180deg, #5ac8fa 0%, var(--accent) 100%);
+    }
+    .bar.is-today {
+      background: linear-gradient(180deg, #64d2ff 0%, #0a84ff 100%);
+      box-shadow: 0 3px 10px rgba(0,122,255,.35);
+    }
+
+    .marker-line {
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      height: 2px;
+      background: var(--orange);
+      border-radius: 2px;
+      opacity: 0.7;
+    }
+
+    .bar-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .bar-label.today { color: var(--accent); font-weight: 700; }
+
+    .bar-target {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* ── List rows ── */
+    .entry-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      position: relative;
+    }
+
+    .entry-row + .entry-row::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 16px; right: 0;
+      height: 0.5px;
+      background: var(--line);
+    }
+
+    .entry-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .entry-body { flex: 1; min-width: 0; }
+
+    .entry-main {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .entry-duration {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+
+    .entry-delete-btn {
+      background: var(--red-light);
+      color: var(--red);
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .entry-delete-btn:active { opacity: 0.65; }
+
+    /* ── Form inputs ── */
+    .ios-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font: inherit;
+      font-size: 17px;
+      color: var(--text);
+      padding: 13px 16px;
+    }
+    .ios-input::placeholder { color: var(--muted); }
+
+    .ios-select {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font: inherit;
+      font-size: 17px;
+      color: var(--text);
+      padding: 13px 16px;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .ios-input-row {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      min-height: 46px;
+      gap: 8px;
+      position: relative;
+    }
+
+    .ios-input-row + .ios-input-row::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 16px; right: 0;
+      height: 0.5px;
+      background: var(--line);
+    }
+
+    .ios-input-label {
+      font-size: 17px;
+      color: var(--text);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ios-input-field {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font: inherit;
+      font-size: 17px;
+      color: var(--muted);
+      text-align: right;
+      padding: 13px 0;
+    }
+    .ios-input-field::placeholder { color: var(--muted2); }
+
+    .ios-input-select {
+      flex: 0 1 auto;
+      background: transparent;
+      border: none;
+      outline: none;
+      font: inherit;
+      font-size: 17px;
+      color: var(--muted);
+      text-align: right;
+      padding: 13px 0;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    /* ── Muted info box ── */
+    .info-box {
+      background: var(--fill);
+      border-radius: var(--radius-inner);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .info-box strong { color: var(--text2); }
+
+    /* ── Import/Export special area ── */
+    .import-drop {
+      border: 1.5px dashed rgba(0,122,255,.4);
+      border-radius: var(--radius-card);
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--accent-light);
+    }
+
+    .import-drop-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .import-drop-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .import-status {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 10px 4px 0;
+      line-height: 1.5;
+    }
+
+    /* ── Tab Bar ── */
+    .tab-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(249,249,249,.92);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-top: 0.5px solid var(--line);
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0 12px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      gap: 3px;
+      -webkit-user-select: none;
+    }
+
+    .tab-icon {
+      font-size: 24px;
+      line-height: 1;
+      opacity: 0.45;
+      transition: all 0.2s cubic-bezier(.23,1,.32,1);
+    }
+
+    .tab-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+      transition: color 0.2s ease;
+    }
+
+    .tab-item.active .tab-icon {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    .tab-item.active .tab-label {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Tab icons use color on active */
+    .tab-item[data-view="home"].active .tab-icon { filter: none; }
+    .tab-item[data-view="home"] .tab-icon { color: var(--accent); }
+    .tab-item[data-view="log"] .tab-icon { color: var(--orange); }
+    .tab-item[data-view="settings"] .tab-icon { color: var(--purple); }
+    .tab-item[data-view="log"].active .tab-label { color: var(--orange); }
+    .tab-item[data-view="settings"].active .tab-label { color: var(--purple); }
+
+    /* ── Views ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 0.5px;
+      background: var(--line);
+      margin: 0 16px;
+    }
+
+    /* ── Spacing utilities ── */
+    .mt-4 { margin-top: 4px; }
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+
+    /* ── Animations ── */
+    .view.active .ios-card,
+    .view.active .metric-tile,
+    .view.active .warning-card {
+      animation: fadeSlideUp 0.28s cubic-bezier(.23,1,.32,1) both;
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stagger children */
+    .view.active .section:nth-child(1) .ios-card { animation-delay: 0ms; }
+    .view.active .section:nth-child(2) .ios-card { animation-delay: 40ms; }
+    .view.active .section:nth-child(3) .ios-card { animation-delay: 80ms; }
+    .view.active .section:nth-child(4) .ios-card { animation-delay: 120ms; }
+    .view.active .section:nth-child(5) .ios-card { animation-delay: 160ms; }
+
+    @media (min-width: 431px) {
+      .app { box-shadow: 0 0 0 0.5px var(--line); }
+    }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="status">
-      <div id="statusTime">9:41</div>
-      <div class="status-right"><span class="sig"></span><span class="sig"></span><span class="sig"></span><div class="battery"><div class="fill"></div></div></div>
-    </div>
 
-    <div class="hero">
-      <div class="hero-top">
+    <!-- ── Navigation Header ── -->
+    <div class="nav-header">
+      <div class="nav-title-row">
         <div>
-          <h1>消費税法<br>Study Log</h1>
-          <div class="sub">目標時間から逆算して、今週の必要時間と遅れを見える化</div>
+          <div class="nav-large-title">消費税法</div>
+          <div class="nav-subtitle">学習ログ &amp; 逆算スケジュール</div>
         </div>
-        <div class="pill" id="daysLeft">試験日 未設定</div>
-      </div>
-      <div class="hero-meta">
-        <div class="mini-card"><div class="mini-label">開始日</div><div class="mini-value" id="startDateLabel">2026/3/1</div></div>
-        <div class="mini-card"><div class="mini-label">総目標時間</div><div class="mini-value" id="targetHoursLabel">360h</div></div>
+        <div class="nav-badge" id="daysLeft">試験日 未設定</div>
       </div>
     </div>
 
+    <!-- ═══════════════ HOME VIEW ═══════════════ -->
     <div id="view-home" class="view active">
-      <div class="metrics">
-        <div class="card"><div class="label">今日</div><div class="metric-value" id="todayHours">0.0h</div></div>
-        <div class="card"><div class="label">今週</div><div class="metric-value" id="weekHours">0.0h</div></div>
-        <div class="card"><div class="label">累計</div><div class="metric-value" id="totalHours">0.0h</div></div>
-      </div>
 
-      <div class="card" style="margin-top:12px;">
-        <div class="progress-head"><div><div class="section-title" style="margin-bottom:4px;">総合進捗</div><div class="progress-meta" id="totalProgressMeta">0.0h / 450h</div></div><div class="entry-time" id="totalProgressPct">0%</div></div>
-        <div class="progress-track"><div class="progress-bar" id="totalProgressBar"></div></div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="progress-head"><div><div class="section-title" style="margin-bottom:4px;">今週ペース</div><div class="progress-meta" id="weeklyNeedMeta">今週必要 0.0h / 実績 0.0h</div></div><div class="entry-time" id="weeklyGap">-</div></div>
-        <div class="progress-track"><div class="progress-bar" id="weeklyProgressBar"></div></div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">今週の警告</div>
-        <div id="warningBox" class="warning ok"><div class="warning-title" id="warningTitle">順調</div><div class="warning-body" id="warningBody">設定を保存するとここにペース判定が出ます。</div></div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">タイマー</div>
-        <div class="stack">
-          <div class="two">
-            <select id="category"><option>講義</option><option>理論</option><option>計算</option><option>テスト</option><option>その他</option></select>
-            <input id="note" type="text" placeholder="メモ（任意）" />
+      <!-- Quick stats row -->
+      <div class="section">
+        <div class="metrics-grid">
+          <div class="metric-tile">
+            <div class="metric-tile-label">今日</div>
+            <div class="metric-tile-value accent" id="todayHours">0.0h</div>
           </div>
-          <div class="big-time" id="timerDisplay">00:00:00</div>
-          <div class="controls"><button class="primary" id="startBtn">開始</button><button class="secondary" id="stopBtn">終了して保存</button></div>
-          <div class="hint">科目は消費税法で固定。区分だけ選んで記録します。</div>
+          <div class="metric-tile">
+            <div class="metric-tile-label">今週</div>
+            <div class="metric-tile-value" id="weekHours">0.0h</div>
+          </div>
+          <div class="metric-tile">
+            <div class="metric-tile-label">累計</div>
+            <div class="metric-tile-value" id="totalHours">0.0h</div>
+          </div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">今週の累計進捗グラフ</div>
-        <div class="section-sub">青 = 実績累計 / オレンジ = その曜日終了時点の必要累計（平日1.5h固定、土日で残り配分）</div>
-        <div class="bar-wrap" id="weeklyChart"></div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">最近の記録</div>
-        <div id="recentEntries"></div>
-      </div>
-    </div>
-
-    <div id="view-log" class="view">
-      <div class="card">
-        <div class="section-title">手動追加</div>
-        <div class="stack">
-          <div class="three">
-            <input id="manualDate" type="date" />
-            <select id="manualCategory"><option>講義</option><option>理論</option><option>計算</option><option>テスト</option><option>その他</option></select>
-            <input id="manualMinutes" type="number" min="1" placeholder="分 (例: 90)" />
-          </div>
-          <input id="manualNote" type="text" placeholder="メモ（任意）" />
-          <button class="primary" id="manualAddBtn">記録を追加</button>
-          <div class="muted-box">過去分を入れるときは日付を変えてまとめて追加できます。</div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">全記録</div>
-        <div id="allEntries"></div>
-      </div>
-    </div>
-
-    <div id="view-settings" class="view">
-      <div class="card">
-        <div class="section-title">設定</div>
-        <div class="stack">
-          <div class="two"><input id="startDate" type="date" /><input id="examDate" type="date" /></div>
-          <div class="two"><input id="targetHours" type="number" min="1" placeholder="総目標時間 (例: 450)" /><input id="weeklyGoal" type="number" min="1" placeholder="手動週目標（任意）" /></div>
-          <button class="primary" id="saveSettingsBtn">設定を保存</button>
-          <div class="muted-box">開始日は 2026/3/1 を初期設定にしています。<br>試験日は 2026/8/6 を初期値、総目標時間は 360h を初期値にしています。平日1.5h・土日で残りを埋める配分です。</div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">逆算サマリー</div>
-        <div id="summaryRows"></div>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="section-title">データ管理</div>
-        <div class="stack">
-
-          <div class="two">
-            <button class="secondary" id="exportBtn">📤 JSON書き出し</button>
-            <button class="secondary" id="dedupeBtn">🧹 重複整理</button>
-          </div>
-
-          <div class="muted-box" style="font-size:12px; line-height:1.6;">
-            <strong>📱 iPhoneでの保存方法</strong><br>
-            「JSON書き出し」→ 開いたページで共有ボタン → 「ファイルに保存」
-          </div>
-
-          <div style="border-top:1px solid var(--line); padding-top:12px;">
-            <div class="section-title" style="font-size:15px; margin-bottom:8px;">📥 バックアップから復旧</div>
-
-            <div class="stack">
-              <label style="display:block; background:rgba(0,122,255,.07); border:1.5px dashed rgba(0,122,255,.35); border-radius:16px; padding:14px; cursor:pointer; text-align:center; font-size:13px; color:var(--accent); font-weight:700;">
-                JSONファイルを選択してタップ
-                <input id="importFile" type="file" accept="application/json,.json" style="display:none;" />
-              </label>
-
-              <div id="importStatus" class="muted-box" style="font-size:12px; min-height:36px;">まだJSONは読み込まれていません</div>
-
-              <textarea id="importText" style="display:none;"></textarea>
-
-              <div class="two">
-                <button class="secondary" id="importPreviewBtn" style="font-size:13px;">🔍 JSON確認</button>
-                <button class="primary" id="importReplaceBtn" style="font-size:13px;">⬆️ 上書きで復旧</button>
+      <!-- Progress -->
+      <div class="section">
+        <div class="section-header">進捗</div>
+        <div class="ios-card">
+          <div class="progress-section">
+            <div class="progress-head">
+              <div>
+                <div class="progress-title">総合進捗</div>
+                <div class="progress-subtitle" id="totalProgressMeta">0.0h / 450h</div>
               </div>
-              <button class="secondary" id="importMergeBtn" style="font-size:13px;">➕ 追記で復旧（既存データを残す）</button>
-
-              <div class="muted-box" style="font-size:12px; line-height:1.6;">
-                <strong>上書き復旧</strong>：JSONの内容で完全に置き換え<br>
-                <strong>追記復旧</strong>：今のデータに加えて追加（重複は自動除去）
-              </div>
+              <div class="progress-pct" id="totalProgressPct">0%</div>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar" id="totalProgressBar"></div>
             </div>
           </div>
 
-          <button class="secondary danger" id="clearBtn" style="margin-top:4px;">🗑 全データ削除</button>
+          <div class="progress-section">
+            <div class="progress-head">
+              <div>
+                <div class="progress-title">今週ペース</div>
+                <div class="progress-subtitle" id="weeklyNeedMeta">今週必要 0.0h / 実績 0.0h</div>
+              </div>
+              <span class="progress-gap-pill neg" id="weeklyGap">-</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar green" id="weeklyProgressBar"></div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="sticky-tabs">
-    <button class="tab active" data-view="home">ホーム</button>
-    <button class="tab" data-view="log">記録</button>
-    <button class="tab" data-view="settings">設定</button>
+      <!-- Warning -->
+      <div class="section">
+        <div id="warningBox" class="warning-card ok">
+          <div class="warning-icon" id="warningIcon">✅</div>
+          <div>
+            <div class="warning-title" id="warningTitle">順調</div>
+            <div class="warning-body" id="warningBody">設定を保存するとここにペース判定が出ます。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="section">
+        <div class="section-header">タイマー</div>
+        <div class="ios-card">
+          <div class="timer-section">
+            <div class="timer-chips" id="categoryChips">
+              <div class="chip selected" data-cat="講義">講義</div>
+              <div class="chip" data-cat="理論">理論</div>
+              <div class="chip" data-cat="計算">計算</div>
+              <div class="chip" data-cat="テスト">テスト</div>
+              <div class="chip" data-cat="その他">その他</div>
+            </div>
+            <input class="timer-note-input" id="note" type="text" placeholder="メモ（任意）" />
+          </div>
+          <div class="big-timer" id="timerDisplay">00:00:00</div>
+          <div class="timer-btns">
+            <button class="btn btn-primary" id="startBtn">開始</button>
+            <button class="btn btn-secondary" id="stopBtn">終了して保存</button>
+          </div>
+          <div class="hint">科目は消費税法で固定。区分だけ選んで記録します。</div>
+          <!-- hidden select for JS compatibility -->
+          <select id="category" style="display:none;"><option>講義</option><option>理論</option><option>計算</option><option>テスト</option><option>その他</option></select>
+        </div>
+      </div>
+
+      <!-- Weekly chart -->
+      <div class="section">
+        <div class="section-header">今週の累計進捗</div>
+        <div class="ios-card">
+          <div class="chart-wrap" id="weeklyChart"></div>
+          <div class="info-box" style="margin:0 12px 12px; font-size:11px;">
+            🔵 実績累計 &nbsp;｜&nbsp; 🟠 その曜日終了時点の必要累計
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent entries -->
+      <div class="section">
+        <div class="section-header">最近の記録</div>
+        <div class="ios-card" id="recentEntries"></div>
+      </div>
+
+    </div><!-- /view-home -->
+
+    <!-- ═══════════════ LOG VIEW ═══════════════ -->
+    <div id="view-log" class="view">
+
+      <div class="section">
+        <div class="section-header">手動で記録を追加</div>
+        <div class="ios-card">
+          <div class="ios-input-row">
+            <span class="ios-input-label">日付</span>
+            <input class="ios-input-field" id="manualDate" type="date" />
+          </div>
+          <div class="ios-input-row">
+            <span class="ios-input-label">区分</span>
+            <select class="ios-input-select" id="manualCategory">
+              <option>講義</option><option>理論</option><option>計算</option><option>テスト</option><option>その他</option>
+            </select>
+          </div>
+          <div class="ios-input-row">
+            <span class="ios-input-label">時間（分）</span>
+            <input class="ios-input-field" id="manualMinutes" type="number" min="1" placeholder="例: 90" />
+          </div>
+          <div class="ios-input-row">
+            <span class="ios-input-label">メモ</span>
+            <input class="ios-input-field" id="manualNote" type="text" placeholder="任意" />
+          </div>
+        </div>
+        <div style="padding:12px 0 0;">
+          <button class="btn btn-primary" id="manualAddBtn">追加する</button>
+        </div>
+        <div class="info-box mt-12">過去の日付を選んで、まとめて記録できます。</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">全記録</div>
+        <div class="ios-card" id="allEntries"></div>
+      </div>
+
+    </div><!-- /view-log -->
+
+    <!-- ═══════════════ SETTINGS VIEW ═══════════════ -->
+    <div id="view-settings" class="view">
+
+      <!-- Settings form -->
+      <div class="section">
+        <div class="section-header">学習スケジュール</div>
+        <div class="ios-card">
+          <div class="ios-input-row">
+            <span class="ios-input-label">開始日</span>
+            <input class="ios-input-field" id="startDate" type="date" />
+          </div>
+          <div class="ios-input-row">
+            <span class="ios-input-label">試験日</span>
+            <input class="ios-input-field" id="examDate" type="date" />
+          </div>
+          <div class="ios-input-row">
+            <span class="ios-input-label">総目標時間</span>
+            <input class="ios-input-field" id="targetHours" type="number" min="1" placeholder="450" />
+          </div>
+          <div class="ios-input-row">
+            <span class="ios-input-label">週目標（任意）</span>
+            <input class="ios-input-field" id="weeklyGoal" type="number" min="1" placeholder="自動計算" />
+          </div>
+        </div>
+        <div style="padding:12px 0 0;">
+          <button class="btn btn-primary" id="saveSettingsBtn">設定を保存</button>
+        </div>
+        <div class="info-box mt-12">開始 2026/3/1・試験日 2026/8/6・目標 450h が初期値です。平日1.5h・土日で残りを自動配分します。</div>
+      </div>
+
+      <!-- Summary -->
+      <div class="section">
+        <div class="section-header">逆算サマリー</div>
+        <div class="ios-card" id="summaryRows"></div>
+      </div>
+
+      <!-- Data management -->
+      <div class="section">
+        <div class="section-header">データ管理</div>
+
+        <div class="ios-card">
+          <div class="ios-card-row" style="cursor:pointer;" id="exportBtn">
+            <span class="ios-card-label">📤 バックアップを書き出し</span>
+            <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M1 1l7 6.5L1 14" stroke="rgba(60,60,67,.3)" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="ios-card-row" style="cursor:pointer;" id="dedupeBtn">
+            <span class="ios-card-label">🧹 重複データを整理</span>
+            <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M1 1l7 6.5L1 14" stroke="rgba(60,60,67,.3)" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <div class="info-box mt-8" style="font-size:12px;">
+          <strong>📱 iPhone保存方法：</strong>「書き出し」→ 共有ボタン → 「ファイルに保存」
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">バックアップから復旧</div>
+
+        <label class="import-drop" for="importFile" style="display:block;">
+          <div style="font-size:28px; margin-bottom:6px;">📂</div>
+          <div class="import-drop-label">JSONファイルを選択</div>
+          <div class="import-drop-sub">タップしてファイルを選んでください</div>
+          <input id="importFile" type="file" accept="application/json,.json" style="display:none;" />
+        </label>
+
+        <textarea id="importText" style="display:none;"></textarea>
+        <div id="importStatus" class="import-status">まだJSONは読み込まれていません</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+          <button class="btn btn-outline" id="importPreviewBtn" style="font-size:14px;">🔍 内容を確認</button>
+          <button class="btn btn-primary" id="importReplaceBtn" style="font-size:14px;">⬆️ 上書き復旧</button>
+        </div>
+        <button class="btn btn-secondary" id="importMergeBtn" style="font-size:14px; margin-top:10px;">➕ 追記で復旧（既存を残す）</button>
+
+        <div class="info-box mt-8" style="font-size:12px;">
+          <strong>上書き</strong>：JSONで完全置き換え　<strong>追記</strong>：今のデータに追加（重複は自動除去）
+        </div>
+      </div>
+
+      <div class="section" style="margin-bottom:20px;">
+        <button class="btn btn-danger" id="clearBtn">🗑 全データを削除</button>
+      </div>
+
+    </div><!-- /view-settings -->
+
+  </div><!-- /app -->
+
+  <!-- ── Tab Bar ── -->
+  <div class="tab-bar">
+    <button class="tab-item active" data-view="home">
+      <span class="tab-icon">📊</span>
+      <span class="tab-label">ホーム</span>
+    </button>
+    <button class="tab-item" data-view="log">
+      <span class="tab-icon">📝</span>
+      <span class="tab-label">記録</span>
+    </button>
+    <button class="tab-item" data-view="settings">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">設定</span>
+    </button>
   </div>
 
 <script>
@@ -241,7 +1009,21 @@ const STORAGE_KEY = 'studylog_entries_v2';
 const SETTINGS_KEY = 'studylog_settings_v2';
 let timerInterval = null;
 let timerStartAt = null;
+let selectedCategory = '講義';
 const $ = id => document.getElementById(id);
+
+// ── Category chips ──
+document.querySelectorAll('#categoryChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    selectedCategory = chip.dataset.cat;
+    $('category').value = selectedCategory;
+    // Haptic-like micro bounce
+    chip.style.transform = 'scale(0.93)';
+    setTimeout(() => { chip.style.transform = ''; }, 140);
+  });
+});
 
 function defaultSettings(){ return { startDate:'2026-03-01', examDate:'2026-08-06', targetHours:450, weeklyGoal:null }; }
 function getEntries(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
@@ -283,16 +1065,18 @@ function calcPlan(entries, settings){
   return {doneHours,targetHours,remainingHours,daysLeft,weeksLeft,autoWeeklyNeed,weeklyNeed,weekHours,todayExpected,todayGap,weekGap};
 }
 
-function renderStatusTime(){ const now=new Date(); $('statusTime').textContent=`${now.getHours()}:${pad(now.getMinutes())}`; }
-
 function renderMetrics(entries, settings, plan){
   const today = entries.filter(e => e.endAt >= startOfDay());
   const week = entries.filter(e => e.endAt >= startOfWeek());
   $('todayHours').textContent = formatHours(sumHours(today));
   $('weekHours').textContent = formatHours(sumHours(week));
   $('totalHours').textContent = formatHours(plan.doneHours);
-  $('startDateLabel').textContent = formatDateOnly(settings.startDate);
-  $('targetHoursLabel').textContent = `${plan.targetHours}h`;
+
+  // Hero header info
+  const startLabel = document.getElementById('startDateLabel');
+  if (startLabel) startLabel.textContent = formatDateOnly(settings.startDate);
+  const targetLabel = document.getElementById('targetHoursLabel');
+  if (targetLabel) targetLabel.textContent = `${plan.targetHours}h`;
 
   const totalRate = plan.targetHours > 0 ? Math.min(100, Math.round((plan.doneHours / plan.targetHours) * 100)) : 0;
   $('totalProgressMeta').textContent = `${plan.doneHours.toFixed(1)}h / ${plan.targetHours}h`;
@@ -300,44 +1084,76 @@ function renderMetrics(entries, settings, plan){
   $('totalProgressBar').style.width = `${totalRate}%`;
 
   const weeklyRate = plan.weeklyNeed > 0 ? Math.min(100, (plan.weekHours / plan.weeklyNeed) * 100) : 0;
-  $('weeklyNeedMeta').textContent = `今週必要 ${plan.weeklyNeed.toFixed(1)}h / 実績 ${plan.weekHours.toFixed(1)}h`;
-  $('weeklyGap').textContent = plan.weekGap >= 0 ? `+${plan.weekGap.toFixed(1)}h` : `${plan.weekGap.toFixed(1)}h`;
+  $('weeklyNeedMeta').textContent = `必要 ${plan.weeklyNeed.toFixed(1)}h / 実績 ${plan.weekHours.toFixed(1)}h`;
+
+  const gapPill = $('weeklyGap');
+  const gapVal = plan.weekGap;
+  gapPill.textContent = gapVal >= 0 ? `+${gapVal.toFixed(1)}h` : `${gapVal.toFixed(1)}h`;
+  gapPill.className = 'progress-gap-pill ' + (gapVal >= 0 ? 'pos' : 'neg');
+
   $('weeklyProgressBar').style.width = `${Math.max(0, Math.min(100, weeklyRate))}%`;
   $('daysLeft').textContent = `試験まで ${plan.daysLeft}日`;
 }
 
 function renderWarning(plan){
-  const box = $('warningBox'), title = $('warningTitle'), body = $('warningBody');
+  const box = $('warningBox'), title = $('warningTitle'), body = $('warningBody'), icon = $('warningIcon');
   const shortage = Math.max(0, plan.todayExpected - plan.weekHours);
-  box.className = 'warning ok';
   if (plan.weekGap >= 0){
-    title.textContent = '順調';
-    body.textContent = `今週ペースを上回っています。必要 ${plan.weeklyNeed.toFixed(1)}h に対して実績 ${plan.weekHours.toFixed(1)}h。`;
+    box.className='warning-card ok'; icon.textContent='✅';
+    title.textContent='順調';
+    body.textContent=`今週ペースを上回っています。必要 ${plan.weeklyNeed.toFixed(1)}h に対して実績 ${plan.weekHours.toFixed(1)}h。`;
   } else if (plan.todayGap >= -1.0){
-    box.className = 'warning warn';
-    title.textContent = 'やや遅れ';
-    body.textContent = `今日時点の必要累計 ${plan.todayExpected.toFixed(1)}h に対して ${shortage.toFixed(1)}h 不足。週末で巻き返せる範囲です。`;
+    box.className='warning-card warn'; icon.textContent='⚠️';
+    title.textContent='やや遅れ';
+    body.textContent=`今日時点の必要累計 ${plan.todayExpected.toFixed(1)}h に対して ${shortage.toFixed(1)}h 不足。週末で巻き返せます。`;
   } else {
-    box.className = 'warning danger';
-    title.textContent = '要巻き返し';
-    body.textContent = `今日時点の必要累計を ${shortage.toFixed(1)}h 下回っています。今週の残りで重点的に積む必要があります。`;
+    box.className='warning-card danger'; icon.textContent='🚨';
+    title.textContent='要巻き返し';
+    body.textContent=`今日時点の必要累計を ${shortage.toFixed(1)}h 下回っています。今週の残りで重点的に積んでください。`;
   }
+}
+
+function categoryColor(cat) {
+  const map = { '講義':'#007aff','理論':'#34c759','計算':'#ff9f0a','テスト':'#ff3b30','その他':'#af52de' };
+  return map[cat] || '#007aff';
 }
 
 function renderRecent(entries){
   const recent = entries.slice(0, 8), target = $('recentEntries');
-  if (!recent.length){ target.innerHTML = '<div class="muted-box">まだ記録がありません</div>'; return; }
-  target.innerHTML = recent.map(e => `<div class="row"><div><div>消費税法 / ${escapeHtml(e.category)}</div><div class="entry-meta">${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div></div><div class="entry-time">${e.durationMin.toFixed(0)}分</div></div>`).join('');
+  if (!recent.length){ target.innerHTML = '<div class="empty-state">まだ記録がありません</div>'; return; }
+  target.innerHTML = recent.map(e => `
+    <div class="entry-row">
+      <div class="entry-dot" style="background:${categoryColor(e.category)}"></div>
+      <div class="entry-body">
+        <div class="entry-main">${escapeHtml(e.category)}${e.note ? ' · ' + escapeHtml(e.note) : ''}</div>
+        <div class="entry-sub">${formatDate(e.endAt)}</div>
+      </div>
+      <div class="entry-duration">${e.durationMin.toFixed(0)}分</div>
+    </div>`).join('');
 }
+
 function renderAll(entries){
   const target = $('allEntries');
-  if (!entries.length){ target.innerHTML = '<div class="muted-box">まだ記録がありません</div>'; return; }
-  target.innerHTML = entries.map((e,i) => `<div class="row"><div><div>消費税法 / ${escapeHtml(e.category)}</div><div class="entry-meta">${formatDate(e.endAt)}${e.note ? ' ・ ' + escapeHtml(e.note) : ''}</div></div><div style="text-align:right;"><div class="entry-time">${e.durationMin.toFixed(0)}分</div><button class="secondary small-btn danger" onclick="deleteEntry(${i})">削除</button></div></div>`).join('');
+  if (!entries.length){ target.innerHTML = '<div class="empty-state">まだ記録がありません</div>'; return; }
+  target.innerHTML = entries.map((e,i) => `
+    <div class="entry-row">
+      <div class="entry-dot" style="background:${categoryColor(e.category)}"></div>
+      <div class="entry-body">
+        <div class="entry-main">${escapeHtml(e.category)}${e.note ? ' · ' + escapeHtml(e.note) : ''}</div>
+        <div class="entry-sub">${formatDate(e.endAt)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="entry-duration">${e.durationMin.toFixed(0)}分</div>
+        <button class="entry-delete-btn" onclick="deleteEntry(${i})">削除</button>
+      </div>
+    </div>`).join('');
 }
+
 function renderWeeklyChart(entries, plan){
   const target = $('weeklyChart');
   const dayNames = ['月','火','水','木','金','土','日'];
   const start = startOfWeek();
+  const todayIdx = (() => { const d=new Date().getDay(); return d===0?6:d-1; })();
   let cumulative = 0;
   const actualCumulative = Array.from({length:7}, (_, i) => {
     const dayStart = start + i * 86400000, dayEnd = dayStart + 86400000;
@@ -347,14 +1163,31 @@ function renderWeeklyChart(entries, plan){
   });
   const targetCumulative = Array.from({length:7}, (_, i) => plan.weeklyNeed * ((i+1)/7));
   const max = Math.max(...actualCumulative, ...targetCumulative, 1);
-  target.innerHTML = actualCumulative.map((h, i) => `<div class="bar-col"><div class="bar-value">${h.toFixed(1)}h</div><div class="bar-stack"><div class="marker" style="height:${Math.max(4, (targetCumulative[i]/max)*120)}px"></div><div class="bar" style="height:${Math.max(6, (h/max)*120)}px"></div></div><div class="bar-target">目標 ${targetCumulative[i].toFixed(1)}</div><div class="bar-label">${dayNames[i]}</div></div>`).join('');
+  const maxBarH = 100;
+
+  target.innerHTML = actualCumulative.map((h, i) => {
+    const barH = Math.max(4, (h/max)*maxBarH);
+    const markerH = Math.max(2, (targetCumulative[i]/max)*maxBarH);
+    const isToday = i === todayIdx;
+    return `<div class="bar-col">
+      <div class="bar-value">${h > 0 ? h.toFixed(1) : ''}</div>
+      <div class="bar-stack">
+        <div class="bar ${isToday?'is-today':''}" style="height:${barH}px"></div>
+        <div class="marker-line" style="bottom:${markerH}px;"></div>
+      </div>
+      <div class="bar-target">${targetCumulative[i].toFixed(1)}</div>
+      <div class="bar-label ${isToday?'today':''}">${dayNames[i]}</div>
+    </div>`;
+  }).join('');
 }
+
 function renderSettings(settings, plan){
   $('startDate').value = settings.startDate || '2026-03-01';
   $('examDate').value = settings.examDate || '2026-08-06';
   $('targetHours').value = settings.targetHours || 450;
   $('weeklyGoal').value = settings.weeklyGoal || '';
   $('manualDate').value = new Date().toISOString().slice(0,10);
+
   const rows = [
     ['開始日', formatDateOnly(settings.startDate)],
     ['試験日', formatDateOnly(settings.examDate)],
@@ -362,215 +1195,177 @@ function renderSettings(settings, plan){
     ['累計実績', `${plan.doneHours.toFixed(1)}h`],
     ['残り必要時間', `${plan.remainingHours.toFixed(1)}h`],
     ['残り週数', `${plan.weeksLeft}週`],
-    ['自動計算の今週必要時間', `${plan.autoWeeklyNeed.toFixed(1)}h`],
-    ['現在の今週目標', `${plan.weeklyNeed.toFixed(1)}h`]
+    ['自動計算の週目標', `${plan.autoWeeklyNeed.toFixed(1)}h`],
+    ['現在の週目標', `${plan.weeklyNeed.toFixed(1)}h`],
   ];
-  $('summaryRows').innerHTML = rows.map(([k,v]) => `<div class="row"><div><div>${k}</div></div><div class="entry-time">${v}</div></div>`).join('');
+  $('summaryRows').innerHTML = rows.map(([k,v]) =>
+    `<div class="ios-card-row"><span class="ios-card-label">${k}</span><span class="ios-card-value">${v}</span></div>`
+  ).join('');
 }
 
-
+// ── Entry dedup / validate ──
 function entryKey(e){
-  return [e.subject || '消費税法', e.category || '', Number(e.startAt)||0, Number(e.endAt)||0, Number(e.durationMin)||0, e.note || ''].join('|');
+  return [e.subject||'消費税法', e.category||'', Number(e.startAt)||0, Number(e.endAt)||0, Number(e.durationMin)||0, e.note||''].join('|');
 }
 function dedupeEntries(entries){
-  const seen = new Set();
-  const result = [];
-  for (const e of entries){
-    const key = entryKey(e);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(e);
-  }
+  const seen = new Set(), result = [];
+  for (const e of entries){ const k=entryKey(e); if(seen.has(k)) continue; seen.add(k); result.push(e); }
   return result;
 }
-
 function validateImportData(data){
   if (!data || typeof data !== 'object') throw new Error('JSON形式が不正です');
   if (!Array.isArray(data.entries)) throw new Error('entries が見つかりません');
   const settings = data.settings && typeof data.settings === 'object' ? data.settings : defaultSettings();
   const entries = data.entries.map((e, idx) => {
     if (!e || typeof e !== 'object') throw new Error(`entries[${idx}] が不正です`);
-    const durationMin = Number(e.durationMin);
-    const startAt = Number(e.startAt);
-    const endAt = Number(e.endAt);
-    if (!Number.isFinite(durationMin) || durationMin <= 0) throw new Error(`entries[${idx}] の durationMin が不正です`);
-    if (!Number.isFinite(startAt) || !Number.isFinite(endAt)) throw new Error(`entries[${idx}] の日時が不正です`);
-    return {
-      subject: '消費税法',
-      category: String(e.category || 'その他'),
-      note: e.note ? String(e.note) : '',
-      startAt,
-      endAt,
-      durationMin
-    };
+    const durationMin = Number(e.durationMin), startAt = Number(e.startAt), endAt = Number(e.endAt);
+    if (!Number.isFinite(durationMin)||durationMin<=0) throw new Error(`entries[${idx}] の durationMin が不正`);
+    if (!Number.isFinite(startAt)||!Number.isFinite(endAt)) throw new Error(`entries[${idx}] の日時が不正`);
+    return { subject:'消費税法', category:String(e.category||'その他'), note:e.note?String(e.note):'', startAt, endAt, durationMin };
   });
   return {
-    settings: {
-      startDate: settings.startDate || defaultSettings().startDate,
-      examDate: settings.examDate || defaultSettings().examDate,
-      targetHours: Number(settings.targetHours) || defaultSettings().targetHours,
-      weeklyGoal: Number(settings.weeklyGoal) || null
-    },
+    settings: { startDate:settings.startDate||defaultSettings().startDate, examDate:settings.examDate||defaultSettings().examDate, targetHours:Number(settings.targetHours)||defaultSettings().targetHours, weeklyGoal:Number(settings.weeklyGoal)||null },
     entries
   };
 }
-
-
-
-
-function setImportStatus(text){
-  const el = $('importStatus');
-  if (el) el.textContent = text;
-}
-function parseImportText(){
-  const text = $('importText').value.trim();
-  if (!text) throw new Error('JSONが空です');
-  const parsed = JSON.parse(text);
-  return validateImportData(parsed);
-}
-function fillImportTextFromFile(){
-  const input = $('importFile');
-  const file = input.files && input.files[0];
-  if (!file){
-    setImportStatus('まだJSONは読み込まれていません');
-    return;
-  }
-  setImportStatus(`読込中: ${file.name}`);
-  file.text().then((text) => {
-    $('importText').value = text;
-    try{
-      const data = validateImportData(JSON.parse(text));
-      setImportStatus(`${file.name} / ${data.entries.length}件 読み込み済み`);
-    }catch(err){
-      setImportStatus(`${file.name} / JSON形式エラー`);
-      alert('JSON確認でエラー: ' + (err && err.message ? err.message : err));
-    }
-  }).catch((err) => {
-    setImportStatus('読込失敗');
-    alert('ファイル読込に失敗しました: ' + (err && err.message ? err.message : err));
-  });
-}
+function setImportStatus(text){ const el=$('importStatus'); if(el) el.textContent=text; }
+function parseImportText(){ const text=$('importText').value.trim(); if(!text) throw new Error('JSONが空です'); return validateImportData(JSON.parse(text)); }
 function validateImportPreview(){
-  try{
-    const data = parseImportText();
-    setImportStatus(`確認OK: ${data.entries.length}件 / 目標 ${data.settings.targetHours}h / 開始日 ${data.settings.startDate}`);
-    alert(`JSON確認OK\n記録: ${data.entries.length}件\n目標: ${data.settings.targetHours}h\n開始日: ${data.settings.startDate}`);
-  }catch(err){
-    setImportStatus('JSON確認エラー');
-    alert('JSON確認でエラー: ' + (err && err.message ? err.message : err));
-  }
+  try{ const data=parseImportText(); setImportStatus(`✅ 確認OK: ${data.entries.length}件 / 目標 ${data.settings.targetHours}h`); alert(`JSON確認OK\n記録: ${data.entries.length}件\n目標: ${data.settings.targetHours}h\n開始日: ${data.settings.startDate}`); }
+  catch(err){ setImportStatus('❌ JSON確認エラー'); alert('エラー: '+(err&&err.message?err.message:err)); }
 }
 function importFromText(mode){
   try{
     const data = parseImportText();
-    if (mode === 'replace') {
-      const deduped = dedupeEntries(data.entries);
-      saveEntries(deduped);
-      saveSettings(data.settings);
-      const skipped = Math.max(0, data.entries.length - deduped.length);
-      setImportStatus(`上書き復旧完了: ${deduped.length}件`);
-      alert(`上書き復旧完了: ${deduped.length}件` + (skipped ? ` / ${skipped}件重複整理` : ''));
+    if (mode==='replace'){
+      const deduped=dedupeEntries(data.entries); saveEntries(deduped); saveSettings(data.settings);
+      setImportStatus(`✅ 上書き復旧完了: ${deduped.length}件`);
+      alert(`上書き復旧完了: ${deduped.length}件`);
     } else {
-      const before = getEntries();
-      const merged = dedupeEntries([...data.entries, ...before]);
-      saveEntries(merged);
-      if (confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
-      const added = Math.max(0, merged.length - dedupeEntries(before).length);
-      const skipped = Math.max(0, data.entries.length - added);
-      setImportStatus(`追記復旧完了: ${added}件追加`);
-      alert(`追記復旧完了: ${added}件追加 / ${skipped}件重複スキップ`);
+      const before=getEntries(); const merged=dedupeEntries([...data.entries,...before]); saveEntries(merged);
+      if(confirm('設定もJSONの内容で上書きしますか？')) saveSettings(data.settings);
+      const added=Math.max(0,merged.length-dedupeEntries(before).length);
+      setImportStatus(`✅ 追記復旧完了: ${added}件追加`);
+      alert(`追記復旧完了: ${added}件追加`);
     }
     render();
-  }catch(err){
-    setImportStatus('復旧エラー');
-    alert('復旧に失敗しました: ' + (err && err.message ? err.message : err));
-  }
+  } catch(err){ setImportStatus('❌ 復旧エラー'); alert('復旧失敗: '+(err&&err.message?err.message:err)); }
 }
-function startTimer(){ if (timerStartAt) return; timerStartAt = Date.now(); timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); renderStatusTime(); }, 1000); }
+
+// ── Timer ──
+function startTimer(){
+  if (timerStartAt) return;
+  timerStartAt = Date.now();
+  $('timerDisplay').classList.add('running');
+  $('startBtn').textContent = '計測中…';
+  $('startBtn').disabled = true;
+  $('startBtn').style.opacity = '0.5';
+  timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); }, 1000);
+}
 function stopTimer(){
   if (!timerStartAt) return;
   const endAt = Date.now();
   const durationMin = Math.max(1, Math.round((endAt - timerStartAt) / 60000));
   addEntry({ subject:'消費税法', category:$('category').value, note:$('note').value.trim(), startAt:timerStartAt, endAt, durationMin });
-  clearInterval(timerInterval); timerInterval = null; timerStartAt = null; $('timerDisplay').textContent = '00:00:00'; $('note').value = '';
+  clearInterval(timerInterval); timerInterval=null; timerStartAt=null;
+  $('timerDisplay').textContent='00:00:00';
+  $('timerDisplay').classList.remove('running');
+  $('note').value='';
+  $('startBtn').textContent='開始';
+  $('startBtn').disabled=false;
+  $('startBtn').style.opacity='';
 }
-function deleteEntry(index){ const entries=getEntries(); entries.splice(index,1); saveEntries(entries); render(); }
+function deleteEntry(index){ if(!confirm('この記録を削除しますか？')) return; const entries=getEntries(); entries.splice(index,1); saveEntries(entries); render(); }
 window.deleteEntry = deleteEntry;
 
+// ── Event listeners ──
 $('startBtn').addEventListener('click', startTimer);
 $('stopBtn').addEventListener('click', stopTimer);
+
 $('manualAddBtn').addEventListener('click', () => {
-  const minutes = Number($('manualMinutes').value), manualDate = $('manualDate').value;
-  if (!minutes || minutes <= 0){ alert('分を入れてください'); return; }
+  const minutes=Number($('manualMinutes').value), manualDate=$('manualDate').value;
+  if (!minutes||minutes<=0){ alert('分を入れてください'); return; }
   if (!manualDate){ alert('日付を入れてください'); return; }
-  const endAt = new Date(manualDate + 'T21:00:00').getTime();
-  addEntry({ subject:'消費税法', category:$('manualCategory').value, note:$('manualNote').value.trim(), startAt:endAt - minutes*60000, endAt, durationMin:minutes });
-  $('manualMinutes').value = ''; $('manualNote').value = '';
+  const endAt=new Date(manualDate+'T21:00:00').getTime();
+  addEntry({ subject:'消費税法', category:$('manualCategory').value, note:$('manualNote').value.trim(), startAt:endAt-minutes*60000, endAt, durationMin:minutes });
+  $('manualMinutes').value=''; $('manualNote').value='';
+  alert('記録しました');
 });
+
 $('saveSettingsBtn').addEventListener('click', () => {
-  saveSettings({ startDate:$('startDate').value || '2026-03-01', examDate:$('examDate').value || '2026-08-06', targetHours:Number($('targetHours').value) || 450, weeklyGoal:Number($('weeklyGoal').value) || null });
+  saveSettings({ startDate:$('startDate').value||'2026-03-01', examDate:$('examDate').value||'2026-08-06', targetHours:Number($('targetHours').value)||450, weeklyGoal:Number($('weeklyGoal').value)||null });
   render(); alert('設定を保存しました');
 });
-$('clearBtn').addEventListener('click', () => { if (!confirm('全データを削除しますか？')) return; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SETTINGS_KEY); render(); alert('削除しました'); });
+
+$('clearBtn').addEventListener('click', () => {
+  if (!confirm('全データを削除しますか？')) return;
+  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SETTINGS_KEY); render(); alert('削除しました');
+});
 
 $('exportBtn').addEventListener('click', () => {
-  const data = { settings:getSettings(), entries:getEntries(), exportedAt:new Date().toISOString() };
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  // iOS Safari: Web Share API → fallback → new window
-  if (navigator.share) {
-    const file = new File([blob], 'studylog-export.json', { type:'application/json' });
-    navigator.share({ files:[file], title:'StudyLog バックアップ' })
-      .catch(() => { window.open(url, '_blank'); })
-      .finally(() => { setTimeout(() => URL.revokeObjectURL(url), 10000); });
+  const data={settings:getSettings(),entries:getEntries(),exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  if (navigator.share){
+    const file=new File([blob],'studylog-export.json',{type:'application/json'});
+    navigator.share({files:[file],title:'StudyLog バックアップ'})
+      .catch(()=>{ window.open(url,'_blank'); })
+      .finally(()=>{ setTimeout(()=>URL.revokeObjectURL(url),10000); });
   } else {
-    const a = document.createElement('a'); a.href = url; a.download = 'studylog-export.json';
+    const a=document.createElement('a'); a.href=url; a.download='studylog-export.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
   }
 });
 
 $('dedupeBtn').addEventListener('click', () => {
-  const before = getEntries(); const after = dedupeEntries(before);
-  const removed = before.length - after.length;
+  const before=getEntries(); const after=dedupeEntries(before); const removed=before.length-after.length;
   saveEntries(after); render();
-  alert(removed > 0 ? `重複 ${removed} 件を削除しました（残り ${after.length} 件）` : `重複はありませんでした（${after.length} 件）`);
+  alert(removed>0?`重複 ${removed} 件を削除しました（残り ${after.length} 件）`:`重複はありませんでした（${after.length} 件）`);
 });
 
 $('importFile').addEventListener('change', () => {
-  const file = $('importFile').files && $('importFile').files[0];
-  if (!file) { setImportStatus('まだJSONは読み込まれていません'); return; }
-  setImportStatus(`読込中: ${file.name}`);
+  const file=$('importFile').files&&$('importFile').files[0];
+  if (!file){ setImportStatus('まだJSONは読み込まれていません'); return; }
+  setImportStatus(`読込中: ${file.name}…`);
   file.text().then((text) => {
-    $('importText').value = text;
-    try {
-      const data = validateImportData(JSON.parse(text));
-      setImportStatus(`✅ ${file.name} — ${data.entries.length}件 読み込み済み。「確認」または復旧ボタンを押してください。`);
-    } catch(err) {
-      setImportStatus(`❌ ${file.name} — JSON形式エラー: ${err && err.message ? err.message : err}`);
-    }
-  }).catch((err) => {
-    setImportStatus('❌ 読込失敗: ' + (err && err.message ? err.message : err));
-  });
+    $('importText').value=text;
+    try{ const data=validateImportData(JSON.parse(text)); setImportStatus(`✅ ${file.name} — ${data.entries.length}件 読み込み済み`); }
+    catch(err){ setImportStatus(`❌ JSON形式エラー: ${err&&err.message?err.message:err}`); }
+  }).catch((err)=>{ setImportStatus('❌ 読込失敗: '+(err&&err.message?err.message:err)); });
 });
 
 $('importPreviewBtn').addEventListener('click', validateImportPreview);
-$('importReplaceBtn').addEventListener('click', () => importFromText('replace'));
-$('importMergeBtn').addEventListener('click', () => importFromText('merge'));
-document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); $('view-' + btn.dataset.view).classList.add('active');
-}));
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); }); }
+$('importReplaceBtn').addEventListener('click', ()=>importFromText('replace'));
+$('importMergeBtn').addEventListener('click', ()=>importFromText('merge'));
+
+// ── Tab switching ──
+document.querySelectorAll('.tab-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-item').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    $('view-'+btn.dataset.view).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+if ('serviceWorker' in navigator) { window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }); }
+
+// ── Render ──
 function render(){
-  renderStatusTime();
-  const settings = getSettings();
-  const entries = getEntries().sort((a,b) => b.endAt - a.endAt);
-  const scopedEntries = filteredByStart(entries, settings);
-  const plan = calcPlan(entries, settings);
-  renderMetrics(scopedEntries, settings, plan); renderWarning(plan); renderRecent(scopedEntries); renderAll(scopedEntries); renderWeeklyChart(scopedEntries, plan); renderSettings(settings, plan);
+  const settings=getSettings();
+  const entries=getEntries().sort((a,b)=>b.endAt-a.endAt);
+  const scopedEntries=filteredByStart(entries,settings);
+  const plan=calcPlan(entries,settings);
+  renderMetrics(scopedEntries,settings,plan);
+  renderWarning(plan);
+  renderRecent(scopedEntries);
+  renderAll(scopedEntries);
+  renderWeeklyChart(scopedEntries,plan);
+  renderSettings(settings,plan);
 }
+
 render();
 </script>
 </body>
