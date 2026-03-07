@@ -356,6 +356,15 @@
       gap: 10px;
       padding: 0 16px 16px;
     }
+    .timer-btns.has-pause {
+      grid-template-columns: 1fr 1fr;
+    }
+    .btn-pause {
+      background: var(--orange-light);
+      color: var(--orange);
+      font-weight: 600;
+      grid-column: 1 / -1;
+    }
 
     .hint {
       font-size: 12px;
@@ -834,8 +843,9 @@
           </div>
           <div class="big-timer" id="timerDisplay">00:00:00</div>
           <div class="timer-btns">
-            <button class="btn btn-primary" id="startBtn">開始</button>
-            <button class="btn btn-secondary" id="stopBtn">終了して保存</button>
+            <button class="btn btn-primary" id="startBtn">▶ 開始</button>
+            <button class="btn btn-pause" id="pauseBtn" style="display:none;">⏸ 一時停止</button>
+            <button class="btn btn-secondary" id="stopBtn" style="display:none;">■ 記録して終了</button>
           </div>
           <div class="hint">科目は消費税法で固定。区分だけ選んで記録します。</div>
           <!-- hidden select for JS compatibility -->
@@ -1009,6 +1019,8 @@ const STORAGE_KEY = 'studylog_entries_v2';
 const SETTINGS_KEY = 'studylog_settings_v2';
 let timerInterval = null;
 let timerStartAt = null;
+let timerPausedAt = null;   // 一時停止した時刻
+let timerPausedMs = 0;      // 累計一時停止時間
 let selectedCategory = '講義';
 const $ = id => document.getElementById(id);
 
@@ -1253,33 +1265,79 @@ function importFromText(mode){
 }
 
 // ── Timer ──
+function getElapsedMs() {
+  if (!timerStartAt) return 0;
+  const pausedExtra = timerPausedAt ? (Date.now() - timerPausedAt) : 0;
+  return Date.now() - timerStartAt - timerPausedMs - pausedExtra;
+}
 function startTimer(){
-  if (timerStartAt) return;
+  if (timerStartAt && !timerPausedAt) return; // すでに計測中
+  if (timerPausedAt) {
+    // 一時停止から再開
+    timerPausedMs += Date.now() - timerPausedAt;
+    timerPausedAt = null;
+    $('timerDisplay').classList.add('running');
+    $('pauseBtn').textContent = '⏸ 一時停止';
+    $('pauseBtn').style.background = '';
+    $('startBtn').textContent = '計測中…';
+    $('startBtn').disabled = true;
+    $('startBtn').style.opacity = '0.5';
+    timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(getElapsedMs()); }, 1000);
+    return;
+  }
+  // 新規開始
   timerStartAt = Date.now();
+  timerPausedMs = 0;
+  timerPausedAt = null;
   $('timerDisplay').classList.add('running');
   $('startBtn').textContent = '計測中…';
   $('startBtn').disabled = true;
   $('startBtn').style.opacity = '0.5';
-  timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(Date.now() - timerStartAt); }, 1000);
+  $('pauseBtn').style.display = '';
+  $('stopBtn').style.display = '';
+  document.querySelector('.timer-btns').classList.add('has-pause');
+  timerInterval = setInterval(() => { $('timerDisplay').textContent = formatDuration(getElapsedMs()); }, 1000);
+}
+function pauseTimer(){
+  if (!timerStartAt || timerPausedAt) {
+    // 一時停止中 → 再開
+    startTimer();
+    return;
+  }
+  // 一時停止
+  timerPausedAt = Date.now();
+  clearInterval(timerInterval); timerInterval = null;
+  $('timerDisplay').classList.remove('running');
+  $('pauseBtn').textContent = '▶ 再開';
+  $('pauseBtn').style.background = 'var(--green-light)';
+  $('pauseBtn').style.color = 'var(--green)';
+  $('startBtn').textContent = '一時停止中';
 }
 function stopTimer(){
   if (!timerStartAt) return;
   const endAt = Date.now();
-  const durationMin = Math.max(1, Math.round((endAt - timerStartAt) / 60000));
+  const elapsed = getElapsedMs();
+  const durationMin = Math.max(1, Math.round(elapsed / 60000));
   addEntry({ subject:'消費税法', category:$('category').value, note:$('note').value.trim(), startAt:timerStartAt, endAt, durationMin });
-  clearInterval(timerInterval); timerInterval=null; timerStartAt=null;
+  clearInterval(timerInterval); timerInterval=null; timerStartAt=null; timerPausedAt=null; timerPausedMs=0;
   $('timerDisplay').textContent='00:00:00';
   $('timerDisplay').classList.remove('running');
   $('note').value='';
   $('startBtn').textContent='開始';
   $('startBtn').disabled=false;
   $('startBtn').style.opacity='';
+  $('pauseBtn').style.display='none';
+  $('pauseBtn').textContent='⏸ 一時停止';
+  $('pauseBtn').style.background='';
+  $('pauseBtn').style.color='';
+  document.querySelector('.timer-btns').classList.remove('has-pause');
 }
 function deleteEntry(index){ if(!confirm('この記録を削除しますか？')) return; const entries=getEntries(); entries.splice(index,1); saveEntries(entries); render(); }
 window.deleteEntry = deleteEntry;
 
 // ── Event listeners ──
 $('startBtn').addEventListener('click', startTimer);
+$('pauseBtn').addEventListener('click', pauseTimer);
 $('stopBtn').addEventListener('click', stopTimer);
 
 $('manualAddBtn').addEventListener('click', () => {
